@@ -16,12 +16,12 @@ Rendered from the packaged base template and readme.yaml alone.
 
 <table>
 <tr>
-<td align="center"><img src="docs/screenshots/dashboard.png" alt="Dashboard overview" width="640"><br><sub>Dashboard overview</sub></td>
+<td align="center"><img src="docs/screenshots/dashboard.jpg" alt="Dashboard overview (photo by Stephen Dawson on Unsplash)" width="640"><br><sub>Dashboard overview (photo by Stephen Dawson on Unsplash)</sub></td>
 <td align="center"><picture>
-  <source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/editor-dark.png">
-  <source media="(prefers-color-scheme: light)" srcset="docs/screenshots/editor-light.png">
-  <img src="docs/screenshots/editor-light.png" alt="Editor (light and dark)" width="640">
-</picture><br><sub>Editor (light and dark)</sub></td>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/editor-dark.jpg">
+  <source media="(prefers-color-scheme: light)" srcset="docs/screenshots/editor-light.jpg">
+  <img src="docs/screenshots/editor-light.jpg" alt="Editor, light and dark (photos by Domenico Loia and Mohammad Rahmani on Unsplash)" width="640">
+</picture><br><sub>Editor, light and dark (photos by Domenico Loia and Mohammad Rahmani on Unsplash)</sub></td>
 </tr>
 </table>
 

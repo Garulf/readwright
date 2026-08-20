@@ -33,12 +33,12 @@ A demo CLI that exists only to show off mkreadme
 
 <table>
 <tr>
-<td align="center"><img src="docs/screenshots/main.png" alt="The main window" width="480"><br><sub>The main window</sub></td>
+<td align="center"><img src="docs/screenshots/main.jpg" alt="The main window (photo by Luke Chesser on Unsplash)" width="480"><br><sub>The main window (photo by Luke Chesser on Unsplash)</sub></td>
 <td align="center"><picture>
-  <source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/settings-dark.png">
-  <source media="(prefers-color-scheme: light)" srcset="docs/screenshots/settings-light.png">
-  <img src="docs/screenshots/settings-light.png" alt="Settings (follows your theme)" width="480">
-</picture><br><sub>Settings (follows your theme)</sub></td>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/settings-dark.jpg">
+  <source media="(prefers-color-scheme: light)" srcset="docs/screenshots/settings-light.jpg">
+  <img src="docs/screenshots/settings-light.jpg" alt="Settings, follows your theme (photos by Pankaj Patel and Aditya Wardhana on Unsplash)" width="480">
+</picture><br><sub>Settings, follows your theme (photos by Pankaj Patel and Aditya Wardhana on Unsplash)</sub></td>
 </tr>
 </table>
 
@@ -121,7 +121,7 @@ Supports Python 3.11 / 3.12 / 3.13.
 <tr>
 <td align="center">
 
-<img src="docs/screenshots/mobile/phone.png" alt="Phone" width="200">
+<img src="docs/screenshots/mobile/phone.jpg" alt="Phone" width="200">
 
 </td>
 <td align="center">
@@ -136,7 +136,7 @@ Works on small screens too.
 
 <table>
 <tr>
-<td align="center"><img src="docs/screenshots/mobile/phone.png" alt="Phone" width="480"><br><sub>Phone</sub></td>
+<td align="center"><img src="docs/screenshots/mobile/phone.jpg" alt="Mobile view (photo by Balázs Kétyi on Unsplash)" width="480"><br><sub>Mobile view (photo by Balázs Kétyi on Unsplash)</sub></td>
 </tr>
 </table>
 
@@ -166,7 +166,7 @@ See the full [changelog](https://github.com/octocat/demo-tool/blob/main/CHANGELO
 > [!WARNING]
 > The line below changes on every commit, so `mkreadme check` will flag it; it is here only to demonstrate the helpers.
 
-Built from untagged (0a3e213) on 2026-08-20.
+Built from untagged (2575714) on 2026-08-20.
 
 ## Contributing
 
