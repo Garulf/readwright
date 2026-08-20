@@ -11,10 +11,16 @@
 ```sh
 cd my-repo
 mkreadme init      # writes readme.yaml + README.md.j2 (autodetects owner/repo, name, license, ...)
-mkreadme render    # writes README.md
+mkreadme render    # writes README.md (--watch to re-render on change, -o - for stdout)
 mkreadme check     # exit 1 with a diff if README.md is stale (use as a pre-commit hook / in CI)
 mkreadme badges    # list badge presets
+mkreadme blocks    # list overridable blocks and partials
+mkreadme show partials/install.md.j2   # print a packaged template to copy and tweak
 ```
+
+Already have a README? `mkreadme init --from-readme` moves its body into the template so nothing is
+lost, then takes over `README.md`. Prefer `pyproject.toml`? `mkreadme init --pyproject` writes the config
+to `[tool.readme]`.
 
 `README.md.j2` extends the packaged `base.md.j2` and overrides only what it needs:
 
@@ -40,11 +46,13 @@ Run `{{ project.name }} --help`.
 | `screenshot("main", alt=..., width=...)` | Finds `docs/screenshots/main.{png,jpg,gif,webp,svg}`; `main-dark.*` + `main-light.*` become a theme-aware `<picture>` |
 | `screenshots(columns=2)` | Gallery table of every image in the screenshots dir |
 | `image("path/or/url", "alt", width=...)` | Explicit image, no discovery |
-| `toc()` | Table of contents from the `##`/`###` headings below it |
+| `screenshots(order=[...], captions={...}, subdir=...)` | Control gallery order/captions (or drop a `captions.yaml` in the folder) |
+| `toc()`, `toc(1, 2)` | Table of contents from the headings below it (min/max level) |
+| `changelog(n=1)` | Newest `n` entries of `CHANGELOG.md` |
 | `project.*`, `vars.*` | Repo metadata and free-form config values |
 
 Badge presets: `pypi`, `pypi-downloads`, `python`, `license`, `ci`, `codecov`, `npm`, `github-release`,
-`github-stars`, `pre-commit`, `ruff`, plus donation presets `kofi`, `buymeacoffee`, `github-sponsors`,
+`github-stars`, `pre-commit`, `ruff`, `version`, plus donation presets `kofi`, `buymeacoffee`, `github-sponsors`,
 `patreon`, `paypal`. Add your own under `badges_custom`.
 
 Blocks in `base.md.j2`: `header`, `badges`, `donate`, `toc`, `screenshots`, `install`, `usage`, `extra`,
@@ -54,10 +62,13 @@ Blocks in `base.md.j2`: `header`, `badges`, `donate`, `toc`, `screenshots`, `ins
 ## Configuration
 
 `readme.yaml` in the repo root (or `[tool.readme]` in `pyproject.toml`). Everything is optional;
-metadata is autodetected from the git remote, `pyproject.toml` / `package.json` and the `LICENSE` file.
+metadata is autodetected from the git remote, the `LICENSE` file and whichever manifest the project
+has: `pyproject.toml`, `package.json`, `Cargo.toml`, `go.mod`, `*.csproj`, Gradle (`gradle.properties`
+mod metadata for Minecraft mods) or `hacs.json`. The install section adapts to the project type.
 
 ```yaml
 template: README.md.j2
+templates: [../shared-readme-templates, "pkg:my_org_templates"]   # extra template search paths
 output: README.md
 strict: false                     # missing screenshot -> error instead of warning
 screenshots: {dir: docs/screenshots, width: 720, style: markdown}

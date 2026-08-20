@@ -141,6 +141,15 @@ class Renderer:
         )
         return env
 
+    def source_label(self, name: str) -> str:
+        for loader in self.loaders:
+            try:
+                loader.inner.get_source(self.env, name)
+            except TemplateNotFound:
+                continue
+            return loader.label
+        raise TemplateNotFound(name)
+
     def resolve_template_name(self) -> str:
         name = self.config.template
         try:

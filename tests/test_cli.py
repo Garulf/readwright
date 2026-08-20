@@ -126,3 +126,85 @@ def test_badges_lists_presets(tmp_repo):
     assert result.exit_code == 0
     for name in ("pypi", "kofi", "discord"):
         assert name in result.output
+
+
+def test_render_to_stdout(tmp_repo):
+    result = run("render", "-C", tmp_repo, "-o", "-")
+    assert result.exit_code == 0 and result.output.startswith(MARKER_PREFIX)
+    assert not (tmp_repo / "README.md").exists()
+
+
+def test_render_refuses_unmanaged_without_force(tmp_repo):
+    (tmp_repo / "README.md").write_text("# handwritten\n")
+    result = run("render", "-C", tmp_repo)
+    assert result.exit_code == 1 and "--force" in result.output
+    assert (tmp_repo / "README.md").read_text() == "# handwritten\n"
+    assert run("render", "-C", tmp_repo, "--force").exit_code == 0
+    assert (tmp_repo / "README.md").read_text().startswith(MARKER_PREFIX)
+
+
+def test_render_verbose_lists_sources(tmp_repo):
+    result = run("render", "-C", tmp_repo, "-v")
+    assert "template base.md.j2 <- mkreadme" in result.output
+
+
+def test_config_conflict_warning(tmp_repo):
+    (tmp_repo / "readme.yaml").write_text("badges: []\n")
+    with (tmp_repo / "pyproject.toml").open("a") as fh:
+        fh.write("\n[tool.readme]\nbadges = []\n")
+    result = run("render", "-C", tmp_repo)
+    assert "both readme.yaml and pyproject.toml [tool.readme] exist" in result.output
+
+
+def test_init_from_readme(tmp_repo, no_user_config):
+    (tmp_repo / "README.md").write_text(
+        "# Demo\n\nIntro text.\n\n## Usage\n\nRun it {{ not jinja }}.\n"
+    )
+    result = run("init", "-C", tmp_repo, "--from-readme")
+    assert result.exit_code == 0, result.output
+    template = (tmp_repo / "README.md.j2").read_text()
+    assert "{% raw %}" in template and "Intro text." in template and "# Demo" not in template
+    assert "{% block install %}{% endblock %}" in template
+    text = (tmp_repo / "README.md").read_text()
+    assert run("check", "-C", tmp_repo).exit_code == 0
+    assert "Run it {{ not jinja }}." in text and "## Installation" not in text
+    assert text.startswith(MARKER_PREFIX) and "# demo-pkg" in text
+
+
+def test_init_from_readme_requires_unmanaged(tmp_repo, no_user_config):
+    assert run("init", "-C", tmp_repo, "--from-readme").exit_code == 1
+    run("render", "-C", tmp_repo)
+    (tmp_repo / "README.md.j2").unlink() if (tmp_repo / "README.md.j2").exists() else None
+    result = run("init", "-C", tmp_repo, "--from-readme")
+    assert result.exit_code == 1 and "already managed" in result.output
+
+
+def test_init_pyproject(tmp_repo, no_user_config):
+    result = run("init", "-C", tmp_repo, "--pyproject")
+    assert result.exit_code == 0, result.output
+    assert not (tmp_repo / "readme.yaml").exists()
+    text = (tmp_repo / "pyproject.toml").read_text()
+    assert "[tool.readme]" in text and 'owner = "Octo"' in text
+    assert run("render", "-C", tmp_repo).exit_code == 0
+    again = run("init", "-C", tmp_repo, "--pyproject")
+    assert again.exit_code == 1
+
+
+def test_blocks_and_show(tmp_repo):
+    result = run("blocks", "-C", tmp_repo)
+    assert result.exit_code == 0
+    for name in ("header", "usage", "license", "partials/install.md.j2"):
+        assert name in result.output
+    shown = run("show", "partials/license.md.j2", "-C", tmp_repo)
+    assert shown.exit_code == 0 and "{% if project.license %}" in shown.output
+    assert run("show", "nope.j2", "-C", tmp_repo).exit_code == 1
+
+
+def test_watch_paths(tmp_repo):
+    from mkreadme.cli import watch_paths
+    from mkreadme.config import resolve
+
+    (tmp_repo / "README.md.j2").write_text("x\n")
+    paths = watch_paths(tmp_repo, resolve(tmp_repo))
+    names = {p.name for p in paths}
+    assert {"README.md.j2", "pyproject.toml", "screenshots"} <= names
