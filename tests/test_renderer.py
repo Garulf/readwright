@@ -117,3 +117,28 @@ def test_collapse_blank_lines_preserves_fences():
 def test_empty_blocks_leave_no_double_blank_lines(tmp_repo):
     text = render(tmp_repo).text
     assert "\n\n\n" not in text
+
+
+@pytest.mark.parametrize(
+    ("files", "expected"),
+    [
+        ({"Cargo.toml": '[package]\nname = "crab"\n'}, "cargo install crab"),
+        ({"go.mod": "module github.com/o/gotool\n"}, "go install github.com/o/gotool@latest"),
+        (
+            {
+                "A.csproj": "<Project><PropertyGroup><PackageId>A</PackageId>"
+                "</PropertyGroup></Project>"
+            },
+            "dotnet tool install --global A",
+        ),
+        (
+            {"build.gradle": "", "gradle.properties": "mod_id=x\nminecraft_version=1.21.1\n"},
+            "drop the jar into your `mods` folder (Minecraft 1.21.1)",
+        ),
+        ({"hacs.json": '{"name": "Card"}'}, "Install through [HACS]"),
+    ],
+)
+def test_install_partial_per_project_type(tmp_path, files, expected):
+    for name, content in files.items():
+        (tmp_path / name).write_text(content)
+    assert expected in render(tmp_path).text

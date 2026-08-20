@@ -98,14 +98,14 @@ stays reproducible in CI. `mkreadme render --user-config` merges them ad hoc.
 ```yaml
 # .pre-commit-config.yaml
 - repo: https://github.com/Garulf/mkreadme
-  rev: v0.1.0
+  rev: v0.2.0
   hooks:
     - id: mkreadme-check
 ```
 
 ```yaml
 # .github/workflows/ci.yml
-- uses: Garulf/mkreadme@v0.1.0
+- uses: Garulf/mkreadme@v0.2.0
   with:
     mode: check     # or render
 ```

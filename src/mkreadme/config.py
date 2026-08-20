@@ -28,6 +28,11 @@ class ProjectInfo(StrictModel):
     version: str | None = None
     pypi: str | None = None
     npm: str | None = None
+    crate: str | None = None
+    go_module: str | None = None
+    nuget: str | None = None
+    mod_id: str | None = None
+    minecraft_version: str | None = None
     license: str | None = None
     ci_workflow: str | None = None
     python_versions: list[str] = Field(default_factory=list)

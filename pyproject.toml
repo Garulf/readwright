@@ -1,6 +1,6 @@
 [project]
 name = "mkreadme"
-version = "0.1.0"
+version = "0.2.0"
 description = "Render GitHub READMEs from Jinja2 templates with badge and screenshot helpers"
 authors = [
     { name = "Garulf", email = "535299+Garulf@users.noreply.github.com" }

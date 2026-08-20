@@ -57,3 +57,67 @@ def test_detect_git_without_remote(tmp_path):
     subprocess.run(["git", "init", "-q"], cwd=tmp_path, check=True)
     meta = detect(tmp_path)
     assert meta.owner is None and meta.repo is None
+
+
+def test_detect_rust(tmp_path):
+    (tmp_path / "Cargo.toml").write_text(
+        '[package]\nname = "crabby"\nversion = "2.0.0"\ndescription = "Crab"\n'
+        'license = "MIT OR Apache-2.0"\n'
+    )
+    meta = detect(tmp_path)
+    assert (meta.name, meta.version, meta.tagline, meta.project_type) == (
+        "crabby",
+        "2.0.0",
+        "Crab",
+        "rust",
+    )
+    assert meta.crate == "crabby" and meta.license == "MIT OR Apache-2.0"
+
+
+def test_detect_go(tmp_path):
+    (tmp_path / "go.mod").write_text("module github.com/octo/gotool\n\ngo 1.22\n")
+    meta = detect(tmp_path)
+    assert meta.name == "gotool" and meta.go_module == "github.com/octo/gotool"
+    assert meta.project_type == "go"
+
+
+def test_detect_dotnet(tmp_path):
+    (tmp_path / "Tool.csproj").write_text(
+        "<Project><PropertyGroup><PackageId>Octo.Tool</PackageId><Version>1.0.1</Version>"
+        "<Description>Dot</Description><PackAsTool>true</PackAsTool></PropertyGroup></Project>"
+    )
+    meta = detect(tmp_path)
+    assert meta.name == "Octo.Tool" and meta.nuget == "Octo.Tool" and meta.version == "1.0.1"
+    assert meta.tagline == "Dot" and meta.project_type == "dotnet"
+
+
+def test_detect_gradle_minecraft_mod(tmp_path):
+    (tmp_path / "build.gradle").write_text("plugins { id 'net.neoforged.moddev' }\n")
+    (tmp_path / "gradle.properties").write_text(
+        "mod_id=headglance\nmod_name=HeadGlance\nmod_version=0.3.1\n"
+        "mod_description=Freelook\nminecraft_version=1.21.1\nmod_license=MIT\n"
+    )
+    meta = detect(tmp_path)
+    assert meta.name == "HeadGlance" and meta.version == "0.3.1" and meta.tagline == "Freelook"
+    assert meta.project_type == "minecraft-mod" and meta.minecraft_version == "1.21.1"
+    assert meta.mod_id == "headglance" and meta.license == "MIT"
+
+
+def test_detect_plain_gradle(tmp_path):
+    (tmp_path / "build.gradle.kts").write_text('version = "1.0"\n')
+    (tmp_path / "settings.gradle.kts").write_text('rootProject.name = "libby"\n')
+    meta = detect(tmp_path)
+    assert meta.project_type == "gradle" and meta.name == "libby"
+
+
+def test_detect_hacs(tmp_path):
+    (tmp_path / "hacs.json").write_text('{"name": "Motion Card", "render_readme": true}')
+    meta = detect(tmp_path)
+    assert meta.project_type == "hacs" and meta.name == "Motion Card"
+
+
+def test_detect_hacs_with_package_json_prefers_hacs_type(tmp_path):
+    (tmp_path / "hacs.json").write_text('{"name": "Motion Card"}')
+    (tmp_path / "package.json").write_text('{"name": "motion-card", "version": "1.0.0"}')
+    meta = detect(tmp_path)
+    assert meta.project_type == "hacs" and meta.name == "Motion Card" and meta.version == "1.0.0"
