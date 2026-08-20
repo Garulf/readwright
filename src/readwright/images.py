@@ -128,7 +128,7 @@ class ImageHelper:
         path = directory / "captions.yaml"
         if not path.is_file():
             return {}
-        data = yaml.safe_load(path.read_text()) or {}
+        data = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
         return {str(k): str(v) for k, v in data.items()} if isinstance(data, dict) else {}
 
     def _discover(self, directory: Path) -> list[Shot]:

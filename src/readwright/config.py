@@ -148,7 +148,7 @@ def _validate(data: dict[str, Any], source: str) -> Config:
 
 
 def _read_yaml(path: Path) -> dict[str, Any]:
-    data = yaml.safe_load(path.read_text()) or {}
+    data = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
     if not isinstance(data, dict):
         raise ValueError(f"invalid config in {path}: expected a mapping")
     return data
@@ -158,7 +158,7 @@ def _read_tool_readme(root: Path) -> dict[str, Any] | None:
     path = root / "pyproject.toml"
     if not path.is_file():
         return None
-    data = tomllib.loads(path.read_text())
+    data = tomllib.loads(path.read_text(encoding="utf-8"))
     section = data.get("tool", {}).get("readme")
     return dict(section) if isinstance(section, dict) else None
 

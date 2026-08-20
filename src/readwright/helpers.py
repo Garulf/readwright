@@ -89,7 +89,7 @@ class Helpers:
         if not target.is_file():
             self.warn(f"include_file: '{path}' not found")
             return ""
-        return target.read_text().rstrip("\n")
+        return target.read_text(encoding="utf-8").rstrip("\n")
 
     def code_block(self, path: str, language: str | None = None) -> str:
         content = self.include_file(path)
@@ -132,7 +132,12 @@ class Helpers:
         env = {**os.environ, "NO_COLOR": "1", "TERM": "dumb", "COLUMNS": "80"}
         try:
             result = subprocess.run(
-                shlex.split(command), capture_output=True, text=True, cwd=self.root, env=env
+                shlex.split(command),
+                capture_output=True,
+                text=True,
+                encoding="utf-8",
+                cwd=self.root,
+                env=env,
             )
         except FileNotFoundError:
             message = f"cli_help: executable not found for {command!r}"
@@ -152,7 +157,7 @@ class Helpers:
             self.warn(f"'{path}' not found")
             return None
         suffix = target.suffix.lower()
-        text = target.read_text()
+        text = target.read_text(encoding="utf-8")
         if suffix == ".toml":
             return tomllib.loads(text)
         if suffix == ".json":
@@ -183,7 +188,7 @@ class Helpers:
             return ""
         rows: list[list[str]] = []
         description: list[str] = []
-        for raw in target.read_text().splitlines():
+        for raw in target.read_text(encoding="utf-8").splitlines():
             line = raw.strip()
             if line.startswith("#"):
                 description.append(line.lstrip("# ").strip())
@@ -306,7 +311,10 @@ class Helpers:
             if not rc.is_file():
                 self.warn("contributors: pass a list or add .all-contributorsrc")
                 return ""
-            logins = [c["login"] for c in json.loads(rc.read_text()).get("contributors", [])]
+            logins = [
+                c["login"]
+                for c in json.loads(rc.read_text(encoding="utf-8")).get("contributors", [])
+            ]
         return " ".join(
             f"[![{login}](https://github.com/{login}.png?size={size})](https://github.com/{login})"
             for login in logins
@@ -320,7 +328,9 @@ class Helpers:
         path = self.root / "pyproject.toml"
         if not path.is_file():
             return ""
-        scripts = tomllib.loads(path.read_text()).get("project", {}).get("scripts", {})
+        scripts = (
+            tomllib.loads(path.read_text(encoding="utf-8")).get("project", {}).get("scripts", {})
+        )
         return md_table(
             ["Command", "Entry point"], [[f"`{k}`", f"`{v}`"] for k, v in scripts.items()]
         )
@@ -340,7 +350,7 @@ class Helpers:
         else:
             self.warn("mod_dependencies: no neoforge.mods.toml / mods.toml found")
             return ""
-        data = tomllib.loads(path.read_text())
+        data = tomllib.loads(path.read_text(encoding="utf-8"))
         rows = []
         for deps in data.get("dependencies", {}).values():
             for dep in deps:
@@ -469,7 +479,11 @@ class Helpers:
     # ----------------------------------------------------------------- meta
     def _git(self, *args: str) -> str:
         result = subprocess.run(
-            ["git", "-C", str(self.root), *args], capture_output=True, text=True, check=False
+            ["git", "-C", str(self.root), *args],
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            check=False,
         )
         return result.stdout.strip()
 

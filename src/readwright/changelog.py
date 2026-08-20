@@ -43,4 +43,6 @@ def latest_entries(root: Path, n: int = 1, path: str | None = None, level: int =
     file = root / path if path else find_changelog(root)
     if file is None or not file.is_file():
         return ""
-    return "\n\n".join(relevel(e, level) for e in split_entries(file.read_text())[:n])
+    return "\n\n".join(
+        relevel(e, level) for e in split_entries(file.read_text(encoding="utf-8"))[:n]
+    )

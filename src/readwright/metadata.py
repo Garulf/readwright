@@ -73,6 +73,7 @@ def git_remote_url(root: Path) -> str | None:
             ["git", "-C", str(root), "remote", "get-url", "origin"],
             capture_output=True,
             text=True,
+            encoding="utf-8",
             check=False,
         )
     except FileNotFoundError:
@@ -84,7 +85,7 @@ def license_from_file(root: Path) -> str | None:
     for candidate in ("LICENSE", "LICENSE.md", "LICENSE.txt", "LICENCE", "COPYING"):
         path = root / candidate
         if path.is_file():
-            text = path.read_text(errors="replace").lower()
+            text = path.read_text(encoding="utf-8", errors="replace").lower()
             for signature, spdx in LICENSE_SIGNATURES:
                 if signature.lower() in text:
                     return spdx
@@ -110,7 +111,7 @@ def _apply_pyproject(meta: Metadata, root: Path) -> bool:
     path = root / "pyproject.toml"
     if not path.is_file():
         return False
-    project = tomllib.loads(path.read_text()).get("project", {})
+    project = tomllib.loads(path.read_text(encoding="utf-8")).get("project", {})
     meta.project_type = "python"
     _set(
         meta,
@@ -130,7 +131,7 @@ def _apply_package_json(meta: Metadata, root: Path) -> bool:
     path = root / "package.json"
     if not path.is_file():
         return False
-    data = json.loads(path.read_text())
+    data = json.loads(path.read_text(encoding="utf-8"))
     meta.project_type = "node"
     _set(
         meta,
@@ -147,7 +148,7 @@ def _apply_cargo(meta: Metadata, root: Path) -> bool:
     path = root / "Cargo.toml"
     if not path.is_file():
         return False
-    package = tomllib.loads(path.read_text()).get("package", {})
+    package = tomllib.loads(path.read_text(encoding="utf-8")).get("package", {})
     meta.project_type = "rust"
     _set(
         meta,
@@ -164,7 +165,7 @@ def _apply_go(meta: Metadata, root: Path) -> bool:
     path = root / "go.mod"
     if not path.is_file():
         return False
-    match = GO_MODULE.search(path.read_text())
+    match = GO_MODULE.search(path.read_text(encoding="utf-8"))
     meta.project_type = "go"
     if match:
         module = match.group(1)
@@ -201,7 +202,7 @@ def _gradle_properties(root: Path) -> dict[str, str]:
     if not path.is_file():
         return {}
     props: dict[str, str] = {}
-    for line in path.read_text().splitlines():
+    for line in path.read_text(encoding="utf-8").splitlines():
         line = line.strip()
         if line and not line.startswith(("#", "!")) and "=" in line:
             key, value = line.split("=", 1)
@@ -231,7 +232,7 @@ def _apply_gradle(meta: Metadata, root: Path) -> bool:
     meta.project_type = "gradle"
     for settings in ("settings.gradle", "settings.gradle.kts"):
         path = root / settings
-        if path.is_file() and (m := GRADLE_ROOT_NAME.search(path.read_text())):
+        if path.is_file() and (m := GRADLE_ROOT_NAME.search(path.read_text(encoding="utf-8"))):
             _set(meta, name=m.group(1))
     _set(meta, version=props.get("version"))
     return True
@@ -241,7 +242,7 @@ def _apply_hacs(meta: Metadata, root: Path) -> bool:
     path = root / "hacs.json"
     if not path.is_file():
         return False
-    data = json.loads(path.read_text())
+    data = json.loads(path.read_text(encoding="utf-8"))
     _apply_package_json(meta, root)
     meta.project_type = "hacs"
     _set(meta, name=data.get("name"), ha_min_version=data.get("homeassistant"))
@@ -252,7 +253,7 @@ def _apply_flow_plugin(meta: Metadata, root: Path) -> bool:
     path = root / "plugin.json"
     if not path.is_file():
         return False
-    data = json.loads(path.read_text())
+    data = json.loads(path.read_text(encoding="utf-8"))
     if "ActionKeyword" not in data and "ExecuteFileName" not in data:
         return False
     meta.project_type = "flow-plugin"

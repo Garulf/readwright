@@ -104,13 +104,13 @@ def _render(
 
 
 def _is_managed(path: Path) -> bool:
-    return path.read_text().startswith(MARKER_PREFIX)
+    return path.read_text(encoding="utf-8").startswith(MARKER_PREFIX)
 
 
 def _write_output(root: Path, cfg: Config, result: RenderResult, force: bool) -> None:
     target = root / cfg.output
     if target.is_file():
-        if target.read_text() == result.text:
+        if target.read_text(encoding="utf-8") == result.text:
             out.print(f"{cfg.output} unchanged")
             return
         if not force and not _is_managed(target):
@@ -119,7 +119,7 @@ def _write_output(root: Path, cfg: Config, result: RenderResult, force: bool) ->
                 "use --force to overwrite or `readwright init --from-readme` to adopt it"
             )
     target.parent.mkdir(parents=True, exist_ok=True)
-    target.write_text(result.text)
+    target.write_text(result.text, encoding="utf-8")
     out.print(f"{cfg.output} updated from {result.template_name}")
 
 
@@ -210,7 +210,7 @@ def check(
     target = root / cfg.output
     if not target.is_file():
         fail(f"{cfg.output} does not exist; run `readwright render`")
-    current = target.read_text()
+    current = target.read_text(encoding="utf-8")
     if not current.startswith(MARKER_PREFIX):
         warn(f"{cfg.output} is not managed by readwright (no marker); skipping")
         return
@@ -277,7 +277,7 @@ def _init_config_data(root: Path) -> dict:
 
 
 def _adopted_body(readme: Path) -> str:
-    body = H1.sub("", readme.read_text(), count=1).strip("\n") + "\n"
+    body = H1.sub("", readme.read_text(encoding="utf-8"), count=1).strip("\n") + "\n"
     if JINJA_SYNTAX.search(body):
         return ADOPT_TEMPLATE.format(open="{% raw %}\n", body=body, close="{% endraw +%}\n")
     return ADOPT_TEMPLATE.format(open="", body=body, close="")
@@ -287,11 +287,11 @@ def _write_pyproject_config(root: Path, data: dict) -> None:
     import tomli_w
 
     path = root / "pyproject.toml"
-    text = path.read_text() if path.is_file() else ""
+    text = path.read_text(encoding="utf-8") if path.is_file() else ""
     if "[tool.readme]" in text:
         fail("pyproject.toml already has a [tool.readme] section; refusing to overwrite")
     section = tomli_w.dumps({"tool": {"readme": data}})
-    path.write_text(text.rstrip("\n") + "\n\n" + section if text else section)
+    path.write_text(text.rstrip("\n") + "\n\n" + section if text else section, encoding="utf-8")
 
 
 @app.command()
@@ -324,14 +324,16 @@ def init(
             fail("--from-readme given but README.md does not exist")
         if _is_managed(readme):
             fail("README.md is already managed by readwright")
-        template_path.write_text(_adopted_body(readme))
+        template_path.write_text(_adopted_body(readme), encoding="utf-8")
     else:
-        template_path.write_text(INIT_TEMPLATE.format(name=name))
+        template_path.write_text(INIT_TEMPLATE.format(name=name), encoding="utf-8")
     if pyproject:
         _write_pyproject_config(root, data)
         config_name = "pyproject.toml [tool.readme]"
     else:
-        config_path.write_text(CONFIG_HEADER + yaml.safe_dump(data, sort_keys=False))
+        config_path.write_text(
+            CONFIG_HEADER + yaml.safe_dump(data, sort_keys=False), encoding="utf-8"
+        )
         config_name = DEFAULT_CONFIG_NAME
     if from_readme:
         cfg = _load(root, None, False, False)
