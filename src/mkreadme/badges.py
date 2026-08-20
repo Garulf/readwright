@@ -1,0 +1,245 @@
+"""Badge presets and shields.io URL building."""
+
+from __future__ import annotations
+
+from collections.abc import Callable
+from dataclasses import dataclass
+from urllib.parse import quote, urlencode
+
+from mkreadme.config import Config, CustomBadge
+
+SHIELDS = "https://img.shields.io"
+
+
+def _escape_static(text: str) -> str:
+    return quote(text.replace("-", "--").replace("_", "__"), safe="")
+
+
+def badge_markdown(alt: str, image_url: str, link: str | None) -> str:
+    image = f"![{alt}]({image_url})"
+    return f"[{image}]({link})" if link else image
+
+
+def shield(
+    label: str,
+    message: str,
+    color: str = "blue",
+    link: str | None = None,
+    logo: str | None = None,
+    style: str | None = None,
+) -> str:
+    url = f"{SHIELDS}/badge/{_escape_static(label)}-{_escape_static(message)}-{color}"
+    params = {k: v for k, v in (("logo", logo), ("style", style)) if v}
+    if params:
+        url += "?" + urlencode(params)
+    return badge_markdown(label, url, link)
+
+
+@dataclass
+class BadgeContext:
+    config: Config
+    options: dict[str, object]
+
+    def require(self, *fields: str) -> list[str]:
+        values = []
+        for name in fields:
+            value = self.options.get(name) or getattr(self.config.project, name, None)
+            if not value:
+                raise ValueError(f"badge needs project.{name}; set it in readme.yaml")
+            values.append(str(value))
+        return values
+
+    def handle(self, preset: str) -> str:
+        value = self.options.get("handle") or self.config.donate_handles.get(preset)
+        if not value:
+            raise ValueError(f"badge '{preset}' needs donate_handles.{preset} in readme.yaml")
+        return str(value)
+
+
+Preset = Callable[[BadgeContext], str]
+
+
+def _pypi(ctx: BadgeContext) -> str:
+    (pypi,) = ctx.require("pypi")
+    return badge_markdown("PyPI", f"{SHIELDS}/pypi/v/{pypi}", f"https://pypi.org/project/{pypi}/")
+
+
+def _pypi_downloads(ctx: BadgeContext) -> str:
+    (pypi,) = ctx.require("pypi")
+    return badge_markdown(
+        "Downloads", f"{SHIELDS}/pypi/dm/{pypi}", f"https://pypi.org/project/{pypi}/"
+    )
+
+
+def _python(ctx: BadgeContext) -> str:
+    (pypi,) = ctx.require("pypi")
+    return badge_markdown(
+        "Python", f"{SHIELDS}/pypi/pyversions/{pypi}", f"https://pypi.org/project/{pypi}/"
+    )
+
+
+def _license(ctx: BadgeContext) -> str:
+    owner, repo = ctx.require("owner", "repo")
+    return badge_markdown(
+        "License",
+        f"{SHIELDS}/github/license/{owner}/{repo}",
+        f"https://github.com/{owner}/{repo}/blob/main/LICENSE",
+    )
+
+
+def _ci(ctx: BadgeContext) -> str:
+    owner, repo = ctx.require("owner", "repo")
+    workflow = str(ctx.options.get("workflow") or ctx.config.project.ci_workflow or "ci.yml")
+    return badge_markdown(
+        "CI",
+        f"{SHIELDS}/github/actions/workflow/status/{owner}/{repo}/{workflow}",
+        f"https://github.com/{owner}/{repo}/actions/workflows/{workflow}",
+    )
+
+
+def _codecov(ctx: BadgeContext) -> str:
+    owner, repo = ctx.require("owner", "repo")
+    return badge_markdown(
+        "Coverage",
+        f"{SHIELDS}/codecov/c/github/{owner}/{repo}",
+        f"https://codecov.io/gh/{owner}/{repo}",
+    )
+
+
+def _npm(ctx: BadgeContext) -> str:
+    (npm,) = ctx.require("npm")
+    return badge_markdown(
+        "npm", f"{SHIELDS}/npm/v/{quote(npm, safe='')}", f"https://www.npmjs.com/package/{npm}"
+    )
+
+
+def _github_release(ctx: BadgeContext) -> str:
+    owner, repo = ctx.require("owner", "repo")
+    return badge_markdown(
+        "Release",
+        f"{SHIELDS}/github/v/release/{owner}/{repo}",
+        f"https://github.com/{owner}/{repo}/releases/latest",
+    )
+
+
+def _github_stars(ctx: BadgeContext) -> str:
+    owner, repo = ctx.require("owner", "repo")
+    return badge_markdown(
+        "Stars",
+        f"{SHIELDS}/github/stars/{owner}/{repo}",
+        f"https://github.com/{owner}/{repo}/stargazers",
+    )
+
+
+def _pre_commit(ctx: BadgeContext) -> str:
+    return shield(
+        "pre-commit",
+        "enabled",
+        "brightgreen",
+        logo="pre-commit",
+        link="https://github.com/pre-commit/pre-commit",
+    )
+
+
+def _ruff(ctx: BadgeContext) -> str:
+    url = (
+        f"{SHIELDS}/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/"
+        "assets/badge/v2.json"
+    )
+    return badge_markdown("Ruff", url, "https://github.com/astral-sh/ruff")
+
+
+def _kofi(ctx: BadgeContext) -> str:
+    handle = ctx.handle("kofi")
+    return shield("Ko-fi", "support", "FF5E5B", logo="ko-fi", link=f"https://ko-fi.com/{handle}")
+
+
+def _buymeacoffee(ctx: BadgeContext) -> str:
+    handle = ctx.handle("buymeacoffee")
+    return shield(
+        "Buy Me a Coffee",
+        "support",
+        "FFDD00",
+        logo="buy-me-a-coffee",
+        link=f"https://www.buymeacoffee.com/{handle}",
+    )
+
+
+def _github_sponsors(ctx: BadgeContext) -> str:
+    handle = ctx.handle("github-sponsors")
+    return badge_markdown(
+        "Sponsor",
+        f"{SHIELDS}/github/sponsors/{handle}?logo=githubsponsors",
+        f"https://github.com/sponsors/{handle}",
+    )
+
+
+def _patreon(ctx: BadgeContext) -> str:
+    handle = ctx.handle("patreon")
+    return shield(
+        "Patreon", "support", "F96854", logo="patreon", link=f"https://patreon.com/{handle}"
+    )
+
+
+def _paypal(ctx: BadgeContext) -> str:
+    handle = ctx.handle("paypal")
+    return shield("PayPal", "donate", "00457C", logo="paypal", link=f"https://paypal.me/{handle}")
+
+
+BUILTIN_PRESETS: dict[str, Preset] = {
+    "pypi": _pypi,
+    "pypi-downloads": _pypi_downloads,
+    "python": _python,
+    "license": _license,
+    "ci": _ci,
+    "codecov": _codecov,
+    "npm": _npm,
+    "github-release": _github_release,
+    "github-stars": _github_stars,
+    "pre-commit": _pre_commit,
+    "ruff": _ruff,
+}
+
+DONATION_PRESETS: dict[str, Preset] = {
+    "kofi": _kofi,
+    "buymeacoffee": _buymeacoffee,
+    "github-sponsors": _github_sponsors,
+    "patreon": _patreon,
+    "paypal": _paypal,
+}
+
+
+def _custom_preset(spec: CustomBadge) -> Preset:
+    def render(ctx: BadgeContext) -> str:
+        return shield(
+            spec.label, spec.message, spec.color, link=spec.link, logo=spec.logo, style=spec.style
+        )
+
+    return render
+
+
+class BadgeRegistry:
+    def __init__(self, config: Config) -> None:
+        self.config = config
+        self.presets: dict[str, Preset] = {**BUILTIN_PRESETS, **DONATION_PRESETS}
+        self.presets.update(
+            {name: _custom_preset(spec) for name, spec in config.badges_custom.items()}
+        )
+
+    def names(self) -> list[str]:
+        return list(self.presets)
+
+    def render(self, preset: str, **options: object) -> str:
+        try:
+            fn = self.presets[preset]
+        except KeyError:
+            raise ValueError(
+                f"unknown badge preset '{preset}'; run `mkreadme badges` to list presets"
+            ) from None
+        return fn(BadgeContext(self.config, options))
+
+    def render_all(self) -> str:
+        return " ".join(self.render(spec.preset, **spec.options) for spec in self.config.badges)
+
+    def render_donate(self) -> str:
+        return " ".join(self.render(preset) for preset in self.config.donate)
