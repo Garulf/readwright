@@ -93,6 +93,18 @@ class BadgeSpec(StrictModel):
         return self.preset
 
 
+class BannerConfig(StrictModel):
+    unsplash: str | None = None
+    image: str | None = None
+    alt: str | None = None
+    width: int | None = 1200
+    height: int | None = None
+    credit: str | None = None
+    user: str | None = None
+    photo_id: str | None = None
+    link: str | None = None
+
+
 class RelatedRepo(StrictModel):
     repo: str
     description: str = ""
@@ -107,6 +119,7 @@ class Config(StrictModel):
     allow_exec: bool = False
     badges_style: str | None = None
     related: list[RelatedRepo] = Field(default_factory=list)
+    banner: BannerConfig | None = None
     screenshots: ScreenshotsConfig = Field(default_factory=ScreenshotsConfig)
     badges: list[BadgeSpec] = Field(default_factory=list)
     badges_custom: dict[str, CustomBadge] = Field(default_factory=dict)

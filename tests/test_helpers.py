@@ -195,3 +195,56 @@ def test_helpers_available_in_templates(tmp_repo):
     text = Renderer(tmp_repo, resolve(tmp_repo)).render().text
     assert "> [!TIP]" in text and "[Issues](https://github.com/Octo/demo-repo/issues)" in text
     assert "[MIT](https://spdx.org/licenses/MIT.html)" in text
+
+
+def test_unsplash_helper(tmp_repo):
+    h = make(tmp_repo)
+    md = h.unsplash(
+        "photo-1518770660439-4636190af475",
+        alt="Circuit board",
+        width=800,
+        credit="Alexandre Debiève",
+        user="alexkixa",
+        photo_id="FO7JIlwjOtU",
+    )
+    assert md.startswith('<a href="https://unsplash.com/photos/FO7JIlwjOtU"><img src="')
+    assert (
+        "images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&q=80&w=800" in md
+    )
+    assert 'alt="Circuit board" width="800">' in md
+    assert (
+        'Photo by <a href="https://unsplash.com/@alexkixa?utm_source=demo-repo&utm_medium=referral">'
+        in md
+    )
+    assert "Alexandre Debi" in md and 'utm_medium=referral">Unsplash</a></sub>' in md
+    url_form = h.unsplash(
+        "https://images.unsplash.com/photo-1518770660439-4636190af475?w=1&q=2",
+        credit="X",
+        height=300,
+    )
+    assert "&h=300" in url_form and "photo-1518770660439-4636190af475?" in url_form
+    warnings = []
+    bare = make(tmp_repo, warnings).unsplash("1518770660439-4636190af475", width=None)
+    assert bare.startswith("<img src=") and "width=" not in bare and "Photo by" not in bare
+    assert warnings and "attribution" in warnings[0]
+    with pytest.raises(ValueError, match="photo id"):
+        h.unsplash("https://unsplash.com/photos/FO7JIlwjOtU")
+
+
+def test_banner_helper(tmp_repo):
+    from mkreadme.config import BannerConfig
+
+    assert make(tmp_repo).banner() == ""
+    h = make(
+        tmp_repo,
+        banner=BannerConfig(
+            unsplash="photo-1518770660439-4636190af475", credit="A", user="a", width=600
+        ),
+    )
+    assert "Photo by" in h.banner() and 'width="600"' in h.banner()
+    (tmp_repo / "docs" / "banner.png").write_bytes(b"x")
+    h = make(tmp_repo, banner=BannerConfig(image="docs/banner.png", link="https://x", width=None))
+    assert h.banner() == '<a href="https://x"><img src="docs/banner.png" alt="demo-pkg"></a>'
+    warnings = []
+    make(tmp_repo, warnings, banner=BannerConfig(image="nope.png")).banner()
+    assert warnings and "nope.png" in warnings[0]

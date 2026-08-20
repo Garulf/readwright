@@ -5,6 +5,11 @@ A Lovelace card for motion sensors
 
 [![HACS](https://img.shields.io/badge/HACS-Custom-41BDF5?logo=homeassistant)](https://hacs.xyz) [![Home Assistant](https://img.shields.io/badge/Home%20Assistant-2024.6.0%2B-03A9F4?logo=homeassistant)](https://www.home-assistant.io) [![Release](https://img.shields.io/github/v/release/octocat/motion-card)](https://github.com/octocat/motion-card/releases/latest)
 
+## Preview
+
+<a href="https://unsplash.com/photos/RFAHj4tI37Y"><img src="https://images.unsplash.com/photo-1545259741-2ea3ebf61fa3?auto=format&fit=crop&q=80&w=640" alt="Nest thermostat on a wall" width="640"></a>
+<br><sub>Photo by <a href="https://unsplash.com/@danlefeb?utm_source=motion-card&utm_medium=referral">Dan LeFebvre</a> on <a href="https://unsplash.com/?utm_source=motion-card&utm_medium=referral">Unsplash</a></sub>
+
 ## Installation
 
 [![Open your Home Assistant instance](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=octocat&repository=motion-card&category=plugin)

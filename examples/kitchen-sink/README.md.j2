@@ -1,6 +1,9 @@
 {% extends "base.md.j2" %}
 
 {% block header %}
+{{ center(unsplash("photo-1518770660439-4636190af475", alt="Macro photo of a circuit board", width=1000, height=280,
+                   credit="Alexandre Debiève", user="alexkixa", photo_id="FO7JIlwjOtU")) }}
+
 {{ center(logo(width=96) ~ "\n\n# " ~ project.name ~ "\n\n" ~ project.tagline) }}
 {% endblock %}
 

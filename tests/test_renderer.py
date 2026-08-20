@@ -208,3 +208,19 @@ def test_badges_extra_and_donate_extra_hooks(tmp_repo):
     assert badge_line.endswith("badge/docs-latest-blue)")
     donate_line = next(ln for ln in lines if "ko-fi.com/o" in ln)
     assert donate_line.endswith("badge/tip-jar-blue)")
+
+
+def test_banner_in_header_partial(tmp_repo):
+    write_config(
+        tmp_repo,
+        banner={
+            "unsplash": "photo-1518770660439-4636190af475",
+            "credit": "A",
+            "user": "a",
+            "alt": "hero",
+        },
+    )
+    text = render(tmp_repo).text
+    head = text.split("# demo-pkg")[0]
+    assert '<p align="center">' in head and 'alt="hero"' in head and "Photo by" in head
+    assert render(tmp_repo).text.count('<p align="center">') == 1

@@ -9,6 +9,13 @@ Or add `{{ project.owner }}/{{ project.repo }}` as a custom repository in HACS, 
 {{ my_ha_link("lovelace_resources", "add the resource") }}.
 {% endblock %}
 
+{% block screenshots %}
+## Preview
+
+{{ unsplash("https://images.unsplash.com/photo-1545259741-2ea3ebf61fa3", alt="Nest thermostat on a wall",
+            width=640, credit="Dan LeFebvre", user="danlefeb", photo_id="RFAHj4tI37Y") }}
+{% endblock %}
+
 {% block usage %}
 ## Usage
 

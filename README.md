@@ -78,6 +78,7 @@ plus Minecraft mod, HACS card and Flow Launcher plugin examples.
 | `gh_link("issues", "Issues")`, `spdx_link()`, `my_ha_link("hacs_repository", owner=..., repository=...)` | Repo-relative GitHub links, SPDX license link, My Home Assistant buttons |
 | `callout("tip", text)`, `details(summary, body)`, `center(html)`, `columns([...])` | GitHub alerts, collapsibles, centered blocks, side-by-side cells |
 | `logo(width=120)`, `video("demo")`, `contributors([...])` | Theme-aware logo from `docs/logo.*`, video/gif embed, avatar grid |
+| `unsplash("photo-1518…", credit="Name", user="handle", width=1000, height=280)` | Hero image from Unsplash's CDN with the required attribution line; `banner:` in config puts one above the title |
 | `flow_install_cmd()`, `mc_versions()`, `mod_dependencies()`, `related_repos()` | Flow Launcher / Minecraft mod / related-repo tables |
 | `git_sha()`, `git_tag()`, `today()` | Build metadata (these change between renders, so `check` will flag them) |
 
@@ -115,6 +116,7 @@ strict: false                     # missing screenshot -> error instead of warni
 allow_exec: false                 # let cli_help() run commands during render
 badges_style: flat-square         # optional shields.io style for every badge
 related: [{repo: other-tool, description: Sibling project}]   # for related_repos()
+banner: {unsplash: photo-1518770660439-4636190af475, credit: Alexandre Debiève, user: alexkixa}
 screenshots: {dir: docs/screenshots, width: 720, style: markdown}
 badges: [pypi, python, license, {preset: ci, workflow: test.yml}, {shield: {label: Docs, message: latest, color: success}}]
 badges_custom:

@@ -24,6 +24,8 @@ EXPECTATIONS = {
         "github.com/octocat.png?size=48",
         "shadows the packaged one",
         "[MIT](https://spdx.org/licenses/MIT.html)",
+        "photo-1518770660439-4636190af475",
+        'Photo by <a href="https://unsplash.com/@alexkixa?utm_source=demo-tool',
     ],
     "minecraft-mod": [
         "# HeadGlance",
@@ -49,6 +51,8 @@ EXPECTATIONS = {
         "pip install config-only",
         "> [!NOTE]",
         "Apache-2.0",
+        "photo-1761141535933-7f8e9f468865",
+        "Tao Yuan",
     ],
 }
 

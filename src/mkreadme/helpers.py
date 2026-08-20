@@ -29,6 +29,8 @@ MODS_TOML_PATHS = (
     "src/main/templates/META-INF/neoforge.mods.toml",
 )
 SPDX_URLS = "https://spdx.org/licenses/{id}.html"
+UNSPLASH_CDN = "https://images.unsplash.com"
+UNSPLASH_PHOTO = re.compile(r"(?:photo-)?(?P<id>\d{10,}-[0-9a-f]{10,})")
 MY_HA = "https://my.home-assistant.io"
 
 
@@ -355,6 +357,86 @@ class Helpers:
             rows.append([f"[{item.repo}]({url})", item.description])
         return md_table(["Repository", "Description"], rows)
 
+    # ------------------------------------------------------------- unsplash
+    def _utm(self) -> str:
+        source = (self.config.project.repo or self.config.project.name or "mkreadme").replace(
+            " ", "_"
+        )
+        return urlencode({"utm_source": source, "utm_medium": "referral"})
+
+    def unsplash(
+        self,
+        photo: str,
+        alt: str | None = None,
+        width: int | None = 1200,
+        height: int | None = None,
+        credit: str | None = None,
+        user: str | None = None,
+        photo_id: str | None = None,
+        link: str | None = None,
+        quality: int = 80,
+    ) -> str:
+        """Embed an Unsplash photo by CDN id or images.unsplash.com URL, with attribution."""
+        match = UNSPLASH_PHOTO.search(photo)
+        if not match:
+            raise ValueError(
+                f"unsplash: {photo!r} is not a photo id like 'photo-1518770660439-4636190af475' "
+                "or an images.unsplash.com URL (right-click the photo, copy image address)"
+            )
+        params: dict[str, object] = {"auto": "format", "fit": "crop", "q": quality}
+        if width:
+            params["w"] = width
+        if height:
+            params["h"] = height
+        src = f"{UNSPLASH_CDN}/photo-{match['id']}?{urlencode(params)}"
+        alt = alt or "Photo from Unsplash"
+        width_attr = f' width="{width}"' if width else ""
+        image = f'<img src="{src}" alt="{html.escape(alt, quote=True)}"{width_attr}>'
+        page = link or (f"https://unsplash.com/photos/{photo_id}" if photo_id else None)
+        if page:
+            image = f'<a href="{page}">{image}</a>'
+        if not credit:
+            self.warn(
+                f"unsplash: no credit given for photo {match['id']}; "
+                "Unsplash's license requires attribution (pass credit= and user=)"
+            )
+            return image
+        profile = (
+            f"https://unsplash.com/@{user}?{self._utm()}"
+            if user
+            else f"https://unsplash.com/?{self._utm()}"
+        )
+        attribution = (
+            f'Photo by <a href="{profile}">{html.escape(credit)}</a> on '
+            f'<a href="https://unsplash.com/?{self._utm()}">Unsplash</a>'
+        )
+        return f"{image}\n<br><sub>{attribution}</sub>"
+
+    def banner(self) -> str:
+        cfg = self.config.banner
+        if cfg is None:
+            return ""
+        if cfg.unsplash:
+            return self.unsplash(
+                cfg.unsplash,
+                alt=cfg.alt,
+                width=cfg.width,
+                height=cfg.height,
+                credit=cfg.credit,
+                user=cfg.user,
+                photo_id=cfg.photo_id,
+                link=cfg.link,
+            )
+        if cfg.image:
+            alt = cfg.alt or self.config.project.name or "banner"
+            width_attr = f' width="{cfg.width}"' if cfg.width else ""
+            if "://" not in cfg.image and not (self.root / cfg.image).is_file():
+                self.warn(f"banner image '{cfg.image}' not found")
+            image = f'<img src="{cfg.image}" alt="{html.escape(alt, quote=True)}"{width_attr}>'
+            return f'<a href="{cfg.link}">{image}</a>' if cfg.link else image
+        self.warn("banner: set either 'unsplash' or 'image'")
+        return ""
+
     # ----------------------------------------------------------------- meta
     def _git(self, *args: str) -> str:
         result = subprocess.run(
@@ -378,6 +460,6 @@ class Helpers:
             "gh_link", "spdx_link", "my_ha_link", "details", "callout", "center", "columns",
             "logo", "video", "contributors", "pyversions_list", "entry_points_table",
             "flow_install_cmd", "mc_versions", "mod_dependencies", "related_repos",
-            "git_sha", "git_tag", "today",
+            "git_sha", "git_tag", "today", "unsplash", "banner",
         ]  # fmt: skip
         return {name: getattr(self, name) for name in names}

@@ -1,3 +1,10 @@
+{% set hero = banner() %}
+{% if hero %}
+<p align="center">
+{{ hero }}
+</p>
+
+{% endif %}
 # {{ project.name }}
 
 {% if project.tagline %}
