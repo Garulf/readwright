@@ -1,7 +1,7 @@
 import pytest
 
-from mkreadme.config import Config, ScreenshotsConfig
-from mkreadme.images import ImageHelper, MissingImageError
+from readwright.config import Config, ScreenshotsConfig
+from readwright.images import ImageHelper, MissingImageError
 
 
 def helper(tmp_repo, warnings=None, **shots) -> ImageHelper:

@@ -7,7 +7,7 @@ from collections.abc import Callable
 from dataclasses import dataclass
 from urllib.parse import quote, urlencode
 
-from mkreadme.config import BadgeSpec, Config, CustomBadge
+from readwright.config import BadgeSpec, Config, CustomBadge
 
 SHIELDS = "https://img.shields.io"
 
@@ -302,7 +302,7 @@ class BadgeRegistry:
             fn = self.presets[preset]
         except KeyError:
             raise ValueError(
-                f"unknown badge preset '{preset}'; run `mkreadme badges` to list presets"
+                f"unknown badge preset '{preset}'; run `readwright badges` to list presets"
             ) from None
         style = options.pop("style", None) or self.config.badges_style
         return apply_style(fn(BadgeContext(self.config, options)), style)

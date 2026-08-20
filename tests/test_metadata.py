@@ -1,6 +1,6 @@
 import subprocess
 
-from mkreadme.metadata import detect, parse_github_remote
+from readwright.metadata import detect, parse_github_remote
 
 
 def test_parse_github_remote_ssh_and_https():

@@ -5,9 +5,9 @@ from __future__ import annotations
 import re
 from collections import Counter
 
-TOC_PREFIX = "<!-- mkreadme:toc"
+TOC_PREFIX = "<!-- readwright:toc"
 TOC_TOKEN = f"{TOC_PREFIX} -->"
-TOC_ANY = re.compile(r"<!-- mkreadme:toc(?: (?P<min>\d) (?P<max>\d))? -->")
+TOC_ANY = re.compile(r"<!-- readwright:toc(?: (?P<min>\d) (?P<max>\d))? -->")
 HEADING = re.compile(r"^(#{1,6})\s+(.+?)\s*#*\s*$")
 FENCE = re.compile(r"^\s*(```|~~~)")
 SLUG_STRIP = re.compile(r"[^\w\- ]", re.UNICODE)

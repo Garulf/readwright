@@ -10,16 +10,16 @@
 
 ```sh
 cd my-repo
-mkreadme init      # writes readme.yaml + README.md.j2 (autodetects owner/repo, name, license, ...)
-mkreadme render    # writes README.md (--watch to re-render on change, -o - for stdout)
-mkreadme check     # exit 1 with a diff if README.md is stale (use as a pre-commit hook / in CI)
-mkreadme badges    # list badge presets
-mkreadme blocks    # list overridable blocks and partials
-mkreadme show partials/install.md.j2   # print a packaged template to copy and tweak
+readwright init      # writes readme.yaml + README.md.j2 (autodetects owner/repo, name, license, ...)
+readwright render    # writes README.md (--watch to re-render on change, -o - for stdout)
+readwright check     # exit 1 with a diff if README.md is stale (use as a pre-commit hook / in CI)
+readwright badges    # list badge presets
+readwright blocks    # list overridable blocks and partials
+readwright show partials/install.md.j2   # print a packaged template to copy and tweak
 ```
 
-Already have a README? `mkreadme init --from-readme` moves its body into the template so nothing is
-lost, then takes over `README.md`. Prefer `pyproject.toml`? `mkreadme init --pyproject` writes the config
+Already have a README? `readwright init --from-readme` moves its body into the template so nothing is
+lost, then takes over `README.md`. Prefer `pyproject.toml`? `readwright init --pyproject` writes the config
 to `[tool.readme]`.
 
 `README.md.j2` extends the packaged `base.md.j2` and overrides only what it needs:
@@ -77,7 +77,7 @@ Badge presets: `pypi`, `pypi-downloads`, `python`, `license`, `ci`, `codecov`, `
 
 Blocks in `base.md.j2`: `header`, `badges`, `donate`, `toc`, `screenshots`, `install`, `usage`, `extra`,
 `contributing`, `license`. Any packaged partial can be shadowed by a file of the same name under
-`templates/partials/` in the repo (or `~/.config/mkreadme/templates/` for all your repos).
+`templates/partials/` in the repo (or `~/.config/readwright/templates/` for all your repos).
 
 Image helpers emit plain markdown by default (dark/light pairs use GitHub's
 `#gh-light-mode-only`/`#gh-dark-mode-only` fragments instead of `<picture>`), and only fall back to HTML
@@ -114,8 +114,8 @@ vars: {anything: you like}
 ```
 
 Put the values you repeat across repos (donation handles, owner, custom badges) in
-`~/.config/mkreadme/config.yaml`; `mkreadme init` bakes them into each new `readme.yaml` so rendering
-stays reproducible in CI. `mkreadme render --user-config` merges them ad hoc.
+`~/.config/readwright/config.yaml`; `readwright init` bakes them into each new `readme.yaml` so rendering
+stays reproducible in CI. `readwright render --user-config` merges them ad hoc.
 
 ## pre-commit and GitHub Actions
 
@@ -124,7 +124,7 @@ stays reproducible in CI. `mkreadme render --user-config` merges them ad hoc.
 - repo: https://github.com/{{ project.owner }}/{{ project.repo }}
   rev: v{{ project.version }}
   hooks:
-    - id: mkreadme-check
+    - id: readwright-check
 ```
 
 ```yaml

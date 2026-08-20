@@ -1,5 +1,5 @@
-name: mkreadme
-description: Check or render README.md from a Jinja2 template with mkreadme
+name: readwright
+description: Check or render README.md from a Jinja2 template with readwright
 branding:
   icon: book-open
   color: blue
@@ -13,19 +13,19 @@ inputs:
     required: false
     default: .
   version:
-    description: mkreadme version spec to install (PyPI)
+    description: readwright version spec to install (PyPI)
     required: false
     default: ""
   extra-args:
-    description: Extra arguments passed to mkreadme
+    description: Extra arguments passed to readwright
     required: false
     default: ""
 runs:
   using: composite
   steps:
     - uses: astral-sh/setup-uv@v5
-    - name: Run mkreadme
+    - name: Run readwright
       shell: bash
       run: |
-        spec="mkreadme${{ inputs.version }}"
-        uvx --from "$spec" mkreadme "${{ inputs.mode }}" -C "${{ inputs.root }}" ${{ inputs.extra-args }}
+        spec="readwright${{ inputs.version }}"
+        uvx --from "$spec" readwright "${{ inputs.mode }}" -C "${{ inputs.root }}" ${{ inputs.extra-args }}

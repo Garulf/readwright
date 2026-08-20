@@ -1,10 +1,10 @@
-from mkreadme.toc import TOC_TOKEN, build_toc, github_slug, insert_toc
+from readwright.toc import TOC_TOKEN, build_toc, github_slug, insert_toc
 
 
 def test_github_slug():
     assert github_slug("Installation") == "installation"
     assert github_slug("Quick Start & Usage") == "quick-start--usage"
-    assert github_slug("`mkreadme render`") == "mkreadme-render"
+    assert github_slug("`readwright render`") == "readwright-render"
     assert github_slug("  Ünïcode Title 2.0 ") == "ünïcode-title-20"
 
 
@@ -31,7 +31,7 @@ def test_insert_toc_noop_without_token():
 
 
 def test_build_toc_depth_and_h1():
-    from mkreadme.toc import toc_token
+    from readwright.toc import toc_token
 
     md = "# Top\n## A\n### B\n#### C\n"
     assert build_toc(md, 1, 2) == "- [Top](#top)\n  - [A](#a)"

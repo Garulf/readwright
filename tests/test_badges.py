@@ -1,7 +1,7 @@
 import pytest
 
-from mkreadme.badges import BadgeRegistry, shield
-from mkreadme.config import BadgeSpec, Config, CustomBadge, ProjectInfo
+from readwright.badges import BadgeRegistry, shield
+from readwright.config import BadgeSpec, Config, CustomBadge, ProjectInfo
 
 
 def make_registry(**overrides) -> BadgeRegistry:

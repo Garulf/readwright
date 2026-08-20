@@ -9,7 +9,7 @@ from pathlib import Path
 
 import yaml
 
-from mkreadme.config import Config
+from readwright.config import Config
 
 EXTENSIONS = ("png", "jpg", "jpeg", "gif", "webp", "svg")
 VARIANTS = ("dark", "light")

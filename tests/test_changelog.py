@@ -1,4 +1,4 @@
-from mkreadme.changelog import latest_entries, split_entries
+from readwright.changelog import latest_entries, split_entries
 
 LOG = """# Changelog
 

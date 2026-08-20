@@ -10,7 +10,7 @@ from typing import Any, Literal
 import yaml
 from pydantic import BaseModel, ConfigDict, Field, model_serializer, model_validator
 
-from mkreadme.metadata import detect
+from readwright.metadata import detect
 
 DEFAULT_CONFIG_NAME = "readme.yaml"
 DEFAULT_TEMPLATE = "README.md.j2"
@@ -194,7 +194,7 @@ def load_config(root: Path, config_path: Path | None = None) -> Config:
 
 def user_config_path() -> Path:
     base = os.environ.get("XDG_CONFIG_HOME") or str(Path.home() / ".config")
-    return Path(base) / "mkreadme" / "config.yaml"
+    return Path(base) / "readwright" / "config.yaml"
 
 
 def user_templates_dir() -> Path:

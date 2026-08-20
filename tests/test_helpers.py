@@ -2,8 +2,8 @@ import subprocess
 
 import pytest
 
-from mkreadme.config import Config, ProjectInfo, RelatedRepo
-from mkreadme.helpers import Helpers, fenced, md_table
+from readwright.config import Config, ProjectInfo, RelatedRepo
+from readwright.helpers import Helpers, fenced, md_table
 
 
 def make(tmp_repo, warnings=None, **cfg) -> Helpers:
@@ -192,8 +192,8 @@ def test_git_and_today(tmp_repo):
 
 
 def test_helpers_available_in_templates(tmp_repo):
-    from mkreadme.config import resolve
-    from mkreadme.renderer import Renderer
+    from readwright.config import resolve
+    from readwright.renderer import Renderer
 
     (tmp_repo / "README.md.j2").write_text(
         "{{ callout('tip', 'hi') }}\n{{ gh_link('issues', 'Issues') }}\n{{ spdx_link() }}\n"
@@ -240,7 +240,7 @@ def test_unsplash_helper(tmp_repo):
 
 
 def test_banner_helper(tmp_repo):
-    from mkreadme.config import BannerConfig
+    from readwright.config import BannerConfig
 
     assert make(tmp_repo).banner() == ""
     cfg = BannerConfig(unsplash="photo-1518770660439-4636190af475", credit="A", user="a", width=600)

@@ -1,12 +1,12 @@
-# Every mkreadme config key, annotated. There is no README.md.j2 or templates/ directory here:
-# with no template of its own, mkreadme renders the packaged base.md.j2, so this file is the
+# Every readwright config key, annotated. There is no README.md.j2 or templates/ directory here:
+# with no template of its own, readwright renders the packaged base.md.j2, so this file is the
 # whole README definition.
 
 # --- files --------------------------------------------------------------------
-template: README.md.j2        # looked up in ./templates, then ./, then ~/.config/mkreadme/templates,
+template: README.md.j2        # looked up in ./templates, then ./, then ~/.config/readwright/templates,
                               # then the packaged templates; falls back to base.md.j2 when absent
 templates: []                 # extra search paths, e.g. [../shared-templates, "pkg:my_org_templates"]
-output: README.md             # where `mkreadme render` writes; "-" prints to stdout
+output: README.md             # where `readwright render` writes; "-" prints to stdout
 strict: false                 # true: a missing screenshot/image/executable fails the render
 allow_exec: false             # true: lets cli_help("cmd --help") run commands during render
 

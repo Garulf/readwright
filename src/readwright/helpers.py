@@ -18,7 +18,7 @@ from urllib.parse import urlencode
 
 import yaml
 
-from mkreadme.config import Config
+from readwright.config import Config
 
 LOGO_DIRS = ("", "docs", "assets", "docs/assets", "docs/images", "img", "images")
 LOGO_EXTENSIONS = ("svg", "png", "webp", "jpg")
@@ -366,7 +366,7 @@ class Helpers:
 
     # ------------------------------------------------------------- unsplash
     def _utm(self) -> str:
-        source = (self.config.project.repo or self.config.project.name or "mkreadme").replace(
+        source = (self.config.project.repo or self.config.project.name or "readwright").replace(
             " ", "_"
         )
         return urlencode({"utm_source": source, "utm_medium": "referral"})

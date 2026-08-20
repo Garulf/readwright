@@ -1,7 +1,7 @@
 [project]
 name = "demo-tool"
 version = "1.4.0"
-description = "A demo CLI that exists only to show off mkreadme"
+description = "A demo CLI that exists only to show off readwright"
 license = "MIT"
 requires-python = ">=3.11"
 classifiers = [

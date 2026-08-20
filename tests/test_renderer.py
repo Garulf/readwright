@@ -4,9 +4,9 @@ import pytest
 import yaml
 from jinja2 import TemplateNotFound, UndefinedError
 
-from mkreadme.config import resolve
-from mkreadme.renderer import Renderer, marker
-from mkreadme.toc import TOC_TOKEN
+from readwright.config import resolve
+from readwright.renderer import Renderer, marker
+from readwright.toc import TOC_TOKEN
 
 GOLDEN = Path(__file__).parent / "golden"
 
@@ -108,7 +108,7 @@ def test_vars_and_project_exposed(tmp_repo):
 
 
 def test_collapse_blank_lines_preserves_fences():
-    from mkreadme.renderer import collapse_blank_lines
+    from readwright.renderer import collapse_blank_lines
 
     text = "a\n\n\n\nb\n```\nx\n\n\n\ny\n```\n\n\n"
     assert collapse_blank_lines(text) == "a\n\nb\n```\nx\n\n\n\ny\n```\n"
@@ -162,14 +162,14 @@ def test_extra_template_paths_and_sources(tmp_repo, tmp_path):
     result = render(tmp_repo, user_templates=tmp_path / "nope")
     assert "## Shared contributing" in result.text
     assert result.sources["partials/contributing.md.j2"] == str(tmp_path / "shared")
-    assert result.sources["base.md.j2"] == "mkreadme"
-    assert result.sources["partials/header.md.j2"] == "mkreadme"
+    assert result.sources["base.md.j2"] == "readwright"
+    assert result.sources["partials/header.md.j2"] == "readwright"
 
 
 def test_pkg_template_path(tmp_repo, tmp_path):
-    write_config(tmp_repo, templates=["pkg:mkreadme/templates"])
+    write_config(tmp_repo, templates=["pkg:readwright/templates"])
     result = render(tmp_repo, user_templates=tmp_path / "nope")
-    assert result.sources["base.md.j2"] == "pkg:mkreadme/templates"
+    assert result.sources["base.md.j2"] == "pkg:readwright/templates"
 
 
 def test_repo_template_beats_extra_paths(tmp_repo, tmp_path):

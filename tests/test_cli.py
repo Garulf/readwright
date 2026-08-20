@@ -1,8 +1,8 @@
 import yaml
 from typer.testing import CliRunner
 
-from mkreadme.cli import app
-from mkreadme.renderer import MARKER_PREFIX
+from readwright.cli import app
+from readwright.renderer import MARKER_PREFIX
 
 runner = CliRunner()
 
@@ -13,7 +13,7 @@ def run(*args):
 
 def test_version():
     result = run("--version")
-    assert result.exit_code == 0 and result.output.startswith("mkreadme ")
+    assert result.exit_code == 0 and result.output.startswith("readwright ")
 
 
 def test_render_writes_and_reports_unchanged(tmp_repo):
@@ -72,7 +72,7 @@ def test_check_unmanaged_readme_warns_exit_zero(tmp_repo):
 
 
 def test_check_warns_about_user_templates(tmp_repo, no_user_config):
-    user = no_user_config / "mkreadme" / "templates" / "partials"
+    user = no_user_config / "readwright" / "templates" / "partials"
     user.mkdir(parents=True)
     (user / "donate.md.j2").write_text("coffee\n")
     run("render", "-C", tmp_repo)
@@ -97,8 +97,8 @@ def test_init_scaffolds_and_refuses_overwrite(tmp_repo, no_user_config):
 
 
 def test_init_bakes_in_user_config(tmp_repo, no_user_config):
-    (no_user_config / "mkreadme").mkdir()
-    (no_user_config / "mkreadme" / "config.yaml").write_text(
+    (no_user_config / "readwright").mkdir()
+    (no_user_config / "readwright" / "config.yaml").write_text(
         "donate: [kofi]\ndonate_handles: {kofi: me}\nproject: {owner: Overridden}\n"
     )
     assert run("init", "-C", tmp_repo).exit_code == 0
@@ -108,8 +108,8 @@ def test_init_bakes_in_user_config(tmp_repo, no_user_config):
 
 
 def test_render_user_config_flag(tmp_repo, no_user_config):
-    (no_user_config / "mkreadme").mkdir()
-    (no_user_config / "mkreadme" / "config.yaml").write_text(
+    (no_user_config / "readwright").mkdir()
+    (no_user_config / "readwright" / "config.yaml").write_text(
         "donate: [kofi]\ndonate_handles: {kofi: me}\n"
     )
     run("render", "-C", tmp_repo)
@@ -145,7 +145,7 @@ def test_render_refuses_unmanaged_without_force(tmp_repo):
 
 def test_render_verbose_lists_sources(tmp_repo):
     result = run("render", "-C", tmp_repo, "-v")
-    assert "template base.md.j2 <- mkreadme" in result.output
+    assert "template base.md.j2 <- readwright" in result.output
 
 
 def test_config_conflict_warning(tmp_repo):
@@ -201,8 +201,8 @@ def test_blocks_and_show(tmp_repo):
 
 
 def test_watch_paths(tmp_repo):
-    from mkreadme.cli import watch_paths
-    from mkreadme.config import resolve
+    from readwright.cli import watch_paths
+    from readwright.config import resolve
 
     (tmp_repo / "README.md.j2").write_text("x\n")
     paths = watch_paths(tmp_repo, resolve(tmp_repo))

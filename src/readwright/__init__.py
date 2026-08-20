@@ -3,6 +3,6 @@
 from importlib.metadata import PackageNotFoundError, version
 
 try:
-    __version__ = version("mkreadme")
+    __version__ = version("readwright")
 except PackageNotFoundError:
     __version__ = "0.0.0"

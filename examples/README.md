@@ -1,7 +1,7 @@
-# mkreadme examples
+# readwright examples
 
 Each directory is a self-contained fake project with a `readme.yaml`, a `README.md.j2` and the
-`README.md` that `mkreadme render` produces from them. Run `mkreadme render` inside one to regenerate.
+`README.md` that `readwright render` produces from them. Run `readwright render` inside one to regenerate.
 
 | Example | Shows |
 | --- | --- |
@@ -12,4 +12,4 @@ Each directory is a self-contained fake project with a `readme.yaml`, a `README.
 | [flow-plugin](flow-plugin/) | Flow Launcher `plugin.json` detection and the `pm install` snippet |
 
 The kitchen sink uses `git_sha()` and `today()`, so its committed `README.md` will always be a little
-behind; that is deliberate, to show why those helpers are a poor fit for `mkreadme check`.
+behind; that is deliberate, to show why those helpers are a poor fit for `readwright check`.

@@ -1,7 +1,7 @@
 import pytest
 import yaml
 
-from mkreadme.config import BadgeSpec, Config, load_config, load_user_config, resolve
+from readwright.config import BadgeSpec, Config, load_config, load_user_config, resolve
 
 
 def test_defaults_from_autodetect(tmp_repo):
@@ -71,8 +71,8 @@ def test_load_config_rejects_unknown_keys(tmp_repo):
 
 
 def test_user_config_loaded_from_xdg(no_user_config):
-    (no_user_config / "mkreadme").mkdir()
-    (no_user_config / "mkreadme" / "config.yaml").write_text(
+    (no_user_config / "readwright").mkdir()
+    (no_user_config / "readwright" / "config.yaml").write_text(
         "donate: [kofi]\ndonate_handles: {kofi: me}\nproject: {owner: Me}\n"
     )
     user = load_user_config()
@@ -86,15 +86,15 @@ def test_user_config_absent(no_user_config):
 
 
 def test_resolve_ignores_user_config_by_default(tmp_repo, no_user_config):
-    (no_user_config / "mkreadme").mkdir()
-    (no_user_config / "mkreadme" / "config.yaml").write_text("donate: [kofi]\n")
+    (no_user_config / "readwright").mkdir()
+    (no_user_config / "readwright" / "config.yaml").write_text("donate: [kofi]\n")
     assert resolve(tmp_repo).donate == []
     assert resolve(tmp_repo, use_user_config=True).donate == [BadgeSpec(preset="kofi")]
 
 
 def test_repo_config_wins_over_user_config(tmp_repo, no_user_config):
-    (no_user_config / "mkreadme").mkdir()
-    (no_user_config / "mkreadme" / "config.yaml").write_text(
+    (no_user_config / "readwright").mkdir()
+    (no_user_config / "readwright" / "config.yaml").write_text(
         "donate: [kofi]\ndonate_handles: {kofi: me, patreon: me}\n"
     )
     (tmp_repo / "readme.yaml").write_text("donate: [patreon]\ndonate_handles: {patreon: repo}\n")
@@ -110,7 +110,7 @@ def test_config_model_roundtrip():
 
 
 def test_config_sources_reports_both(tmp_repo):
-    from mkreadme.config import config_sources
+    from readwright.config import config_sources
 
     assert config_sources(tmp_repo) == []
     (tmp_repo / "readme.yaml").write_text("badges: [pypi]\n")

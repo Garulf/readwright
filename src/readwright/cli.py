@@ -1,4 +1,4 @@
-"""mkreadme command line interface."""
+"""readwright command line interface."""
 
 from __future__ import annotations
 
@@ -13,9 +13,9 @@ import yaml
 from rich.console import Console
 from rich.table import Table
 
-from mkreadme import __version__
-from mkreadme.badges import BadgeRegistry
-from mkreadme.config import (
+from readwright import __version__
+from readwright.badges import BadgeRegistry
+from readwright.config import (
     DEFAULT_CONFIG_NAME,
     DEFAULT_TEMPLATE,
     Config,
@@ -25,7 +25,7 @@ from mkreadme.config import (
     load_user_config,
     resolve,
 )
-from mkreadme.renderer import BASE_TEMPLATE, MARKER_PREFIX, Renderer, RenderResult
+from readwright.renderer import BASE_TEMPLATE, MARKER_PREFIX, Renderer, RenderResult
 
 app = typer.Typer(
     help="Render GitHub READMEs from Jinja2 templates.",
@@ -40,7 +40,7 @@ ConfigOpt = Annotated[Path | None, typer.Option("--config", "-c", help="Config f
 UserConfigOpt = Annotated[
     bool,
     typer.Option(
-        "--user-config", help="Merge ~/.config/mkreadme/config.yaml under the repo config."
+        "--user-config", help="Merge ~/.config/readwright/config.yaml under the repo config."
     ),
 ]
 StrictOpt = Annotated[bool, typer.Option("--strict", help="Missing screenshots are errors.")]
@@ -51,7 +51,7 @@ VerboseOpt = Annotated[
 
 def version_callback(value: bool) -> None:
     if value:
-        out.print(f"mkreadme {__version__}")
+        out.print(f"readwright {__version__}")
         raise typer.Exit()
 
 
@@ -115,8 +115,8 @@ def _write_output(root: Path, cfg: Config, result: RenderResult, force: bool) ->
             return
         if not force and not _is_managed(target):
             fail(
-                f"{cfg.output} exists and is not managed by mkreadme; "
-                "use --force to overwrite or `mkreadme init --from-readme` to adopt it"
+                f"{cfg.output} exists and is not managed by readwright; "
+                "use --force to overwrite or `readwright init --from-readme` to adopt it"
             )
     target.parent.mkdir(parents=True, exist_ok=True)
     target.write_text(result.text)
@@ -209,10 +209,10 @@ def check(
         warn(f"user-level template '{name}' was used; CI renders will differ")
     target = root / cfg.output
     if not target.is_file():
-        fail(f"{cfg.output} does not exist; run `mkreadme render`")
+        fail(f"{cfg.output} does not exist; run `readwright render`")
     current = target.read_text()
     if not current.startswith(MARKER_PREFIX):
-        warn(f"{cfg.output} is not managed by mkreadme (no marker); skipping")
+        warn(f"{cfg.output} is not managed by readwright (no marker); skipping")
         return
     if current == result.text:
         out.print(f"{cfg.output} is up to date")
@@ -224,7 +224,7 @@ def check(
         tofile=f"{cfg.output} (rendered)",
     )
     out.print("".join(diff), end="", highlight=False, markup=False)
-    fail(f"{cfg.output} is out of date; run `mkreadme render`")
+    fail(f"{cfg.output} is out of date; run `readwright render`")
 
 
 INIT_TEMPLATE = """\
@@ -240,7 +240,7 @@ Describe how to use {name} here.
 ADOPT_TEMPLATE = """\
 {{% extends "base.md.j2" %}}
 
-{{# Existing README content, moved here by `mkreadme init --from-readme`.
+{{# Existing README content, moved here by `readwright init --from-readme`.
    Trim sections now provided by the base template (install, contributing, license),
    remove the raw tags to start using helpers like screenshot() and badge(). #}}
 {{% block usage %}}
@@ -254,10 +254,10 @@ ADOPT_TEMPLATE = """\
 """
 
 CONFIG_HEADER = """\
-# mkreadme configuration. All keys are optional; autodetected values are shown.
+# readwright configuration. All keys are optional; autodetected values are shown.
 # Keys: template, templates, output, strict, allow_exec, screenshots{dir,width,style}, badges,
 #       badges_style, badges_custom, donate, donate_handles, related, project{...}, vars.
-# Run `mkreadme badges` / `mkreadme blocks` to list badge presets and template blocks.
+# Run `readwright badges` / `readwright blocks` to list badge presets and template blocks.
 """
 
 H1 = re.compile(r"^#\s+.+\n+", re.MULTILINE)
@@ -323,7 +323,7 @@ def init(
         if not readme.is_file():
             fail("--from-readme given but README.md does not exist")
         if _is_managed(readme):
-            fail("README.md is already managed by mkreadme")
+            fail("README.md is already managed by readwright")
         template_path.write_text(_adopted_body(readme))
     else:
         template_path.write_text(INIT_TEMPLATE.format(name=name))
@@ -338,7 +338,7 @@ def init(
         _write_output(root, cfg, _render_with(root, cfg, False), force=True)
         out.print(f"created {config_name} and {DEFAULT_TEMPLATE}; README.md is now managed")
         return
-    out.print(f"created {config_name} and {DEFAULT_TEMPLATE}; run `mkreadme render`")
+    out.print(f"created {config_name} and {DEFAULT_TEMPLATE}; run `readwright render`")
 
 
 @app.command()
