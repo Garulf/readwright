@@ -188,7 +188,9 @@ def badges(root: RootOpt = Path("."), config: ConfigOpt = None) -> None:
     except ValueError:
         cfg = Config(project=ProjectInfo())
     registry = BadgeRegistry(cfg)
-    table = Table("preset", "example", show_lines=False)
+    table = Table(show_lines=False)
+    table.add_column("preset", no_wrap=True)
+    table.add_column("example", overflow="fold")
     for name in registry.names():
         try:
             example = registry.render(name)
