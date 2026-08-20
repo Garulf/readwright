@@ -1,0 +1,14 @@
+- id: mkreadme-check
+  name: mkreadme check
+  description: Fail if README.md is out of date with its mkreadme template.
+  entry: mkreadme check
+  language: python
+  pass_filenames: false
+  files: ^(README\.md|README\.md\.j2|readme\.yaml|templates/.*|docs/screenshots/.*)$
+- id: mkreadme-render
+  name: mkreadme render
+  description: Re-render README.md from its mkreadme template.
+  entry: mkreadme render
+  language: python
+  pass_filenames: false
+  files: ^(README\.md|README\.md\.j2|readme\.yaml|templates/.*|docs/screenshots/.*)$

@@ -26,3 +26,9 @@ repos:
         language: system
         pass_filenames: false
         stages: [pre-push]
+      - id: mkreadme-check
+        name: mkreadme check
+        entry: uv run mkreadme check
+        language: system
+        pass_filenames: false
+        files: ^(README\.md|README\.md\.j2|readme\.yaml|src/mkreadme/templates/.*)$

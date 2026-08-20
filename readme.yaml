@@ -1,0 +1,6 @@
+badges: [pypi, python, license, ci, pre-commit, ruff]
+project:
+  owner: Garulf
+  repo: mkreadme
+  ci_workflow: ci.yml
+  tagline: Render GitHub READMEs from Jinja2 templates with badge and screenshot helpers.

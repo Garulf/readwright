@@ -105,3 +105,15 @@ def test_vars_and_project_exposed(tmp_repo):
         "{{ vars.greeting }} {{ project.owner }} {{ project.url }}\n"
     )
     assert render(tmp_repo).text.endswith("hi Octo https://github.com/Octo/demo-repo\n")
+
+
+def test_collapse_blank_lines_preserves_fences():
+    from mkreadme.renderer import collapse_blank_lines
+
+    text = "a\n\n\n\nb\n```\nx\n\n\n\ny\n```\n\n\n"
+    assert collapse_blank_lines(text) == "a\n\nb\n```\nx\n\n\n\ny\n```\n"
+
+
+def test_empty_blocks_leave_no_double_blank_lines(tmp_repo):
+    text = render(tmp_repo).text
+    assert "\n\n\n" not in text
