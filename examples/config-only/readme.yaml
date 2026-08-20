@@ -1,0 +1,65 @@
+# Every mkreadme config key, annotated. There is no README.md.j2 or templates/ directory here:
+# with no template of its own, mkreadme renders the packaged base.md.j2, so this file is the
+# whole README definition.
+
+# --- files --------------------------------------------------------------------
+template: README.md.j2        # looked up in ./templates, then ./, then ~/.config/mkreadme/templates,
+                              # then the packaged templates; falls back to base.md.j2 when absent
+templates: []                 # extra search paths, e.g. [../shared-templates, "pkg:my_org_templates"]
+output: README.md             # where `mkreadme render` writes; "-" prints to stdout
+strict: false                 # true: a missing screenshot/image/executable fails the render
+allow_exec: false             # true: lets cli_help("cmd --help") run commands during render
+
+# --- screenshots --------------------------------------------------------------
+screenshots:
+  dir: docs/screenshots       # screenshot("name") looks here; name-dark.* + name-light.* -> <picture>
+  width: 640                  # gallery cell width, and screenshot() width when style is html
+  style: html                 # markdown | html (html needed for width attributes)
+
+# --- badges -------------------------------------------------------------------
+badges_style: flat-square     # shields.io style applied to every badge (or pass style= per badge)
+badges:                       # rendered in this order by badges() / the base template
+  - pypi
+  - python
+  - license
+  - {preset: ci, workflow: tests.yml}
+  - github-release
+  - {preset: version}         # same as the bare string "version"
+  - docs                      # a preset from badges_custom below
+  - {shield: {label: Chat, message: Matrix, color: 0DBD8B, logo: matrix, link: "https://matrix.to/#/#config-only:matrix.org"}}
+badges_custom:                # reusable custom shields, referenced by name in badges: or badge("docs")
+  docs: {label: docs, message: latest, color: success, logo: readthedocs, link: https://config-only.readthedocs.io}
+
+# --- donations ----------------------------------------------------------------
+donate: [kofi, github-sponsors, buymeacoffee]   # presets: kofi, buymeacoffee, github-sponsors, patreon, paypal
+donate_handles:
+  kofi: octocat
+  github-sponsors: octocat
+  buymeacoffee: octocat
+  patreon: null
+  paypal: null
+
+# --- project metadata (overrides autodetection) ---------------------------------
+project:
+  name: Config Only           # autodetected from pyproject/package.json/Cargo/go.mod/csproj/gradle/hacs/plugin.json
+  owner: octocat              # autodetected from the git remote
+  repo: config-only
+  tagline: Rendered from the packaged base template and readme.yaml alone.
+  pypi: config-only
+  license: Apache-2.0
+  ci_workflow: tests.yml
+  # npm, crate, go_module, nuget, mod_id, minecraft_version, modrinth, curseforge,
+  # ha_min_version, flow_plugin and version are also available
+
+# --- related repositories (for related_repos()) --------------------------------
+related:
+  - {repo: config-only-gui, description: Desktop front end}
+  - {repo: octocat/Hello-World, description: The classic, url: https://github.com/octocat/Hello-World}
+
+# --- free-form values exposed as vars.* ----------------------------------------
+vars:
+  usage: |                    # the packaged usage partial prints vars.usage when it is set
+    Install it, run `config-only --help`, and that is genuinely all there is.
+
+    > [!NOTE]
+    > This README was produced from `readme.yaml` alone; no Jinja lives in this directory.

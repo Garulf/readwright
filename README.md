@@ -99,7 +99,9 @@ Blocks in `base.md.j2`: `header`, `badges`, `donate`, `toc`, `screenshots`, `ins
 
 ## Configuration
 
-`readme.yaml` in the repo root (or `[tool.readme]` in `pyproject.toml`). Everything is optional;
+`readme.yaml` in the repo root (or `[tool.readme]` in `pyproject.toml`); see
+[`examples/config-only/readme.yaml`](https://github.com/Garulf/mkreadme/blob/main/examples/config-only/readme.yaml) for every key,
+annotated. Everything is optional;
 metadata is autodetected from the git remote, the `LICENSE` file and whichever manifest the project
 has: `pyproject.toml`, `package.json`, `Cargo.toml`, `go.mod`, `*.csproj`, Gradle (`gradle.properties`
 mod metadata for Minecraft mods), `hacs.json` or a Flow Launcher `plugin.json`. The install section

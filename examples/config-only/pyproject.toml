@@ -1,0 +1,7 @@
+[project]
+name = "config-only"
+version = "0.2.0"
+description = "Rendered from the packaged base template and readme.yaml alone"
+license = "Apache-2.0"
+requires-python = ">=3.11"
+classifiers = ["Programming Language :: Python :: 3.11", "Programming Language :: Python :: 3.12"]
