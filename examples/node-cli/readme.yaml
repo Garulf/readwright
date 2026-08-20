@@ -1,0 +1,2 @@
+badges: [npm, license, {preset: ci, workflow: ci.yml}, github-release, version]
+project: {owner: octocat, repo: brewkit}

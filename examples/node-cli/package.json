@@ -1,0 +1,7 @@
+{
+  "name": "brewkit",
+  "version": "3.4.0",
+  "description": "A zero-config bundler for small TypeScript projects",
+  "license": "MIT",
+  "bin": {"brewkit": "./dist/cli.js"}
+}

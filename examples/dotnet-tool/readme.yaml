@@ -1,0 +1,7 @@
+badges:
+  - license
+  - {preset: ci, workflow: ci.yml}
+  - github-release
+  - version
+  - {shield: {label: nuget, message: v2.1.0, color: 004880, logo: nuget, link: https://www.nuget.org/packages/DotTool.Cli}}
+project: {owner: octocat, repo: dottool}

@@ -56,7 +56,7 @@ Run `{{ project.name }} --help`.
 ```
 
 See [`examples/`](https://github.com/Garulf/readwright/tree/main/examples) for a kitchen-sink project using every helper,
-plus Minecraft mod, HACS card and Flow Launcher plugin examples.
+plus Rust, Go, .NET and Node examples showing how the install section adapts per language.
 
 ## Template helpers
 

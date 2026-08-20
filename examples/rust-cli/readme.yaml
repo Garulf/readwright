@@ -1,0 +1,7 @@
+badges:
+  - license
+  - {preset: ci, workflow: ci.yml}
+  - github-release
+  - version
+  - {shield: {label: crates.io, message: v1.0.0, color: orange, logo: rust, link: https://crates.io/crates/ferrous-cli}}
+project: {owner: octocat, repo: ferrous-cli}

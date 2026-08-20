@@ -1,0 +1,6 @@
+[package]
+name = "ferrous-cli"
+version = "1.0.0"
+description = "A fast command-line grep alternative written in Rust"
+license = "MIT"
+edition = "2021"

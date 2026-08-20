@@ -1,8 +1,0 @@
-[[dependencies.headglance]]
-modId = "neoforge"
-type = "required"
-versionRange = "[21.1,)"
-[[dependencies.headglance]]
-modId = "minecraft"
-type = "required"
-versionRange = "[1.21.1]"

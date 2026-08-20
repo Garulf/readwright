@@ -1,0 +1,6 @@
+badges:
+  - license
+  - {preset: ci, workflow: ci.yml}
+  - github-release
+  - {shield: {label: go.dev, message: reference, color: 00ADD8, logo: go, link: https://pkg.go.dev/github.com/octocat/gopher-cli}}
+project: {owner: octocat, repo: gopher-cli, tagline: A tiny HTTP load generator written in Go, license: MIT}
