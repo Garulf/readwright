@@ -1,0 +1,25 @@
+## Installation
+
+{% if project.project_type == "python" and project.pypi %}
+```sh
+pip install {{ project.pypi }}
+```
+
+Or with [uv](https://docs.astral.sh/uv/):
+
+```sh
+uv tool install {{ project.pypi }}
+```
+{% elif project.project_type == "node" and project.npm %}
+```sh
+npm install {{ project.npm }}
+```
+{% elif project.url %}
+```sh
+git clone {{ project.url }}.git
+cd {{ project.repo }}
+```
+{% else %}
+Clone the repository and follow the instructions in the source tree.
+{% endif %}
+

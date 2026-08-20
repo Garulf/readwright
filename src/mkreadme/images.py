@@ -137,6 +137,11 @@ class ImageHelper:
                 setattr(shot, variant, getattr(shot, variant) or path)
         return list(shots.values())
 
+    def has_screenshots(self) -> bool:
+        return self.shots_dir.is_dir() and any(
+            p.suffix.lstrip(".").lower() in EXTENSIONS for p in self.shots_dir.iterdir()
+        )
+
     def screenshots(self, columns: int = 2) -> str:
         shots = self._discover()
         if not shots:
