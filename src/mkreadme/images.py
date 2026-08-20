@@ -7,6 +7,8 @@ from collections.abc import Callable
 from dataclasses import dataclass
 from pathlib import Path
 
+import yaml
+
 from mkreadme.config import Config
 
 EXTENSIONS = ("png", "jpg", "jpeg", "gif", "webp", "svg")
@@ -18,6 +20,7 @@ class MissingImageError(FileNotFoundError):
 
 
 def titleize(stem: str) -> str:
+    stem = stem.rsplit("/", 1)[-1]
     return " ".join(part.capitalize() for part in stem.replace("_", "-").split("-") if part)
 
 
@@ -116,13 +119,18 @@ class ImageHelper:
             self.warn(f"image '{path}' not found")
         return img_tag(path, alt, width) if width else md_image(path, alt)
 
-    def _discover(self) -> list[Shot]:
-        if not self.shots_dir.is_dir():
-            self.warn(f"screenshots dir '{self.config.screenshots.dir}' does not exist")
+    def _captions(self, directory: Path) -> dict[str, str]:
+        path = directory / "captions.yaml"
+        if not path.is_file():
+            return {}
+        data = yaml.safe_load(path.read_text()) or {}
+        return {str(k): str(v) for k, v in data.items()} if isinstance(data, dict) else {}
+
+    def _discover(self, directory: Path) -> list[Shot]:
+        if not directory.is_dir():
+            self.warn(f"screenshots dir '{self._rel(directory)}' does not exist")
             return []
-        files = sorted(
-            p for p in self.shots_dir.iterdir() if p.suffix.lstrip(".").lower() in EXTENSIONS
-        )
+        files = sorted(p for p in directory.iterdir() if p.suffix.lstrip(".").lower() in EXTENSIONS)
         shots: dict[str, Shot] = {}
         for path in files:
             stem, variant = path.stem, None
@@ -142,19 +150,36 @@ class ImageHelper:
             p.suffix.lstrip(".").lower() in EXTENSIONS for p in self.shots_dir.iterdir()
         )
 
-    def screenshots(self, columns: int = 2) -> str:
-        shots = self._discover()
+    def screenshots(
+        self,
+        columns: int = 2,
+        subdir: str | None = None,
+        order: list[str] | None = None,
+        captions: dict[str, str] | None = None,
+        show_captions: bool = True,
+    ) -> str:
+        directory = self.shots_dir / subdir if subdir else self.shots_dir
+        shots = self._discover(directory)
         if not shots:
-            if self.shots_dir.is_dir():
-                self.warn(f"no screenshots found in {self.config.screenshots.dir}")
+            if directory.is_dir():
+                self.warn(f"no screenshots found in {self._rel(directory)}")
             return ""
+        all_captions = {**self._captions(directory), **(captions or {})}
+        if order:
+            by_name = {shot.name: shot for shot in shots}
+            missing = [name for name in order if name not in by_name]
+            if missing:
+                self.warn(f"screenshots order lists unknown names: {', '.join(missing)}")
+            ordered = [by_name[n] for n in order if n in by_name]
+            shots = ordered + [s for s in shots if s.name not in order]
         width = self.config.screenshots.width
-        cells = [
-            '<td align="center">'
-            + self._render_shot(shot, titleize(shot.name), width, force_html=True)
-            + "</td>"
-            for shot in shots
-        ]
+        cells = []
+        for shot in shots:
+            caption = all_captions.get(shot.name, titleize(shot.name))
+            cell = self._render_shot(shot, caption, width, force_html=True)
+            if show_captions:
+                cell += f"<br><sub>{html.escape(caption)}</sub>"
+            cells.append(f'<td align="center">{cell}</td>')
         rows = [
             "<tr>\n" + "\n".join(cells[i : i + columns]) + "\n</tr>"
             for i in range(0, len(cells), max(columns, 1))

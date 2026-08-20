@@ -11,12 +11,12 @@ A demo package
 
 <table>
 <tr>
-<td align="center"><img src="docs/screenshots/main.png" alt="Main" width="720"></td>
+<td align="center"><img src="docs/screenshots/main.png" alt="Main" width="720"><br><sub>Main</sub></td>
 <td align="center"><picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/settings-dark.png">
   <source media="(prefers-color-scheme: light)" srcset="docs/screenshots/settings-light.png">
   <img src="docs/screenshots/settings-light.png" alt="Settings" width="720">
-</picture></td>
+</picture><br><sub>Settings</sub></td>
 </tr>
 </table>
 

@@ -28,3 +28,13 @@ def test_insert_toc_replaces_token_and_excludes_headings_above_it():
 
 def test_insert_toc_noop_without_token():
     assert insert_toc("## A\n") == "## A\n"
+
+
+def test_build_toc_depth_and_h1():
+    from mkreadme.toc import toc_token
+
+    md = "# Top\n## A\n### B\n#### C\n"
+    assert build_toc(md, 1, 2) == "- [Top](#top)\n  - [A](#a)"
+    assert build_toc(md, 2, 2) == "- [A](#a)"
+    assert build_toc(md, 2, 4) == "- [A](#a)\n  - [B](#b)\n    - [C](#c)"
+    assert insert_toc(toc_token(2, 2) + "\n## A\n### B\n") == "- [A](#a)\n## A\n### B\n"

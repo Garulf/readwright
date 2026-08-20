@@ -97,6 +97,12 @@ def test_builtin_presets(preset, img, link):
     assert md.endswith(f"]({link})")
 
 
+def test_version_badge():
+    cfg = Config(project=ProjectInfo(version="1.2.3", owner="O", repo="R"))
+    md = BadgeRegistry(cfg).render("version")
+    assert "badge/version-1.2.3-informational" in md and md.endswith("(https://github.com/O/R)")
+
+
 def test_ci_workflow_override():
     md = make_registry().render("ci", workflow="test.yml")
     assert "/Octo/demo-repo/test.yml" in md

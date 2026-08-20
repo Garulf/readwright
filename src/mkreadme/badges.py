@@ -149,6 +149,11 @@ def _ruff(ctx: BadgeContext) -> str:
     return badge_markdown("Ruff", url, "https://github.com/astral-sh/ruff")
 
 
+def _version(ctx: BadgeContext) -> str:
+    (version,) = ctx.require("version")
+    return shield("version", version, "informational", link=ctx.config.project.url)
+
+
 def _kofi(ctx: BadgeContext) -> str:
     handle = ctx.handle("kofi")
     return shield("Ko-fi", "support", "FF5E5B", logo="ko-fi", link=f"https://ko-fi.com/{handle}")
@@ -198,6 +203,7 @@ BUILTIN_PRESETS: dict[str, Preset] = {
     "github-stars": _github_stars,
     "pre-commit": _pre_commit,
     "ruff": _ruff,
+    "version": _version,
 }
 
 DONATION_PRESETS: dict[str, Preset] = {

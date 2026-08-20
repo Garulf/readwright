@@ -113,3 +113,28 @@ def test_screenshots_gallery_missing_dir(tmp_path):
     warnings = []
     assert helper(tmp_path, warnings).screenshots() == ""
     assert warnings and "docs/screenshots" in warnings[0]
+
+
+def test_screenshots_captions_order_and_subdir(tmp_repo):
+    shots = tmp_repo / "docs" / "screenshots"
+    (shots / "captions.yaml").write_text("main: The main window\n")
+    md = helper(tmp_repo).screenshots(order=["settings", "main"])
+    assert md.index("settings-light.png") < md.index("main.png")
+    assert "<sub>The main window</sub>" in md and 'alt="The main window"' in md
+    assert "<sub>Settings</sub>" in md
+    md = helper(tmp_repo).screenshots(captions={"settings": "Prefs"}, show_captions=False)
+    assert 'alt="Prefs"' in md and "<sub>" not in md
+    sub = shots / "mobile"
+    sub.mkdir()
+    (sub / "phone.png").write_bytes(b"x")
+    md = helper(tmp_repo).screenshots(subdir="mobile")
+    assert "docs/screenshots/mobile/phone.png" in md and "main.png" not in md
+    assert (
+        helper(tmp_repo).screenshot("mobile/phone") == "![Phone](docs/screenshots/mobile/phone.png)"
+    )
+
+
+def test_screenshots_order_unknown_warns(tmp_repo):
+    warnings = []
+    helper(tmp_repo, warnings).screenshots(order=["nope"])
+    assert warnings and "nope" in warnings[0]
