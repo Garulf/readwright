@@ -7,7 +7,7 @@ from collections.abc import Callable
 from dataclasses import dataclass
 from urllib.parse import quote, urlencode
 
-from mkreadme.config import Config, CustomBadge
+from mkreadme.config import BadgeSpec, Config, CustomBadge
 
 SHIELDS = "https://img.shields.io"
 
@@ -307,11 +307,17 @@ class BadgeRegistry:
         style = options.pop("style", None) or self.config.badges_style
         return apply_style(fn(BadgeContext(self.config, options)), style)
 
+    def render_spec(self, spec: BadgeSpec, style: str | None = None) -> str:
+        if spec.shield is not None:
+            return apply_style(
+                _custom_preset(spec.shield)(BadgeContext(self.config, {})),
+                style or self.config.badges_style,
+            )
+        assert spec.preset is not None
+        return self.render(spec.preset, **{"style": style, **spec.options})
+
     def render_all(self, style: str | None = None) -> str:
-        return " ".join(
-            self.render(spec.preset, **{"style": style, **spec.options})
-            for spec in self.config.badges
-        )
+        return " ".join(self.render_spec(spec, style) for spec in self.config.badges)
 
     def render_donate(self, style: str | None = None) -> str:
-        return " ".join(self.render(preset, style=style) for preset in self.config.donate)
+        return " ".join(self.render_spec(spec, style) for spec in self.config.donate)

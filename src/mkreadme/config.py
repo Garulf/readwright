@@ -8,7 +8,7 @@ from pathlib import Path
 from typing import Any, Literal
 
 import yaml
-from pydantic import BaseModel, ConfigDict, Field, model_validator
+from pydantic import BaseModel, ConfigDict, Field, model_serializer, model_validator
 
 from mkreadme.metadata import detect
 
@@ -55,22 +55,6 @@ class ScreenshotsConfig(StrictModel):
     style: Literal["markdown", "html"] = "markdown"
 
 
-class BadgeSpec(StrictModel):
-    preset: str
-    options: dict[str, Any] = Field(default_factory=dict)
-
-    @model_validator(mode="before")
-    @classmethod
-    def coerce(cls, value: Any) -> Any:
-        if isinstance(value, str):
-            return {"preset": value}
-        if isinstance(value, dict) and "options" not in value:
-            value = dict(value)
-            preset = value.pop("preset")
-            return {"preset": preset, "options": value}
-        return value
-
-
 class CustomBadge(StrictModel):
     label: str
     message: str
@@ -78,6 +62,35 @@ class CustomBadge(StrictModel):
     link: str | None = None
     logo: str | None = None
     style: str | None = None
+
+
+class BadgeSpec(StrictModel):
+    preset: str | None = None
+    options: dict[str, Any] = Field(default_factory=dict)
+    shield: CustomBadge | None = None
+
+    @model_validator(mode="before")
+    @classmethod
+    def coerce(cls, value: Any) -> Any:
+        if isinstance(value, str):
+            return {"preset": value}
+        if isinstance(value, dict) and "shield" in value and "preset" not in value:
+            return {"shield": value["shield"]}
+        if isinstance(value, dict) and "options" not in value and "shield" not in value:
+            value = dict(value)
+            preset = value.pop("preset", None)
+            if preset is None:
+                raise ValueError("badge entry needs 'preset' or 'shield'")
+            return {"preset": preset, "options": value}
+        return value
+
+    @model_serializer
+    def compact(self) -> Any:
+        if self.shield is not None:
+            return {"shield": self.shield.model_dump(exclude_defaults=True, exclude_none=True)}
+        if self.options:
+            return {"preset": self.preset, **self.options}
+        return self.preset
 
 
 class RelatedRepo(StrictModel):
@@ -97,7 +110,7 @@ class Config(StrictModel):
     screenshots: ScreenshotsConfig = Field(default_factory=ScreenshotsConfig)
     badges: list[BadgeSpec] = Field(default_factory=list)
     badges_custom: dict[str, CustomBadge] = Field(default_factory=dict)
-    donate: list[str] = Field(default_factory=list)
+    donate: list[BadgeSpec] = Field(default_factory=list)
     donate_handles: dict[str, str | None] = Field(default_factory=dict)
     project: ProjectInfo = Field(default_factory=ProjectInfo)
     vars: dict[str, Any] = Field(default_factory=dict)

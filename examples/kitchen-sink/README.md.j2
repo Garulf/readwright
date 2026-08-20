@@ -4,9 +4,7 @@
 {{ center(logo(width=96) ~ "\n\n# " ~ project.name ~ "\n\n" ~ project.tagline) }}
 {% endblock %}
 
-{% block badges %}
-{{ badges() }} {{ badge("discord") }} {{ shield("docs", "latest", "success", link=gh_link("wiki")) }}
-{% endblock %}
+{% block badges_extra %} {{ shield("docs", "latest", "success", link=gh_link("wiki")) }}{% endblock %}
 
 {% block toc %}
 {{ toc() }}

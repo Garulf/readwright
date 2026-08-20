@@ -62,6 +62,13 @@ plus Minecraft mod, HACS card and Flow Launcher plugin examples.
 | `flow_install_cmd()`, `mc_versions()`, `mod_dependencies()`, `related_repos()` | Flow Launcher / Minecraft mod / related-repo tables |
 | `git_sha()`, `git_tag()`, `today()` | Build metadata (these change between renders, so `check` will flag them) |
 
+To add a badge to the top row without touching the config list, fill the `badges_extra` hook (there is a
+`donate_extra` too):
+
+```jinja
+{% raw %}{% block badges_extra %} {{ shield("docs", "latest", "success", link=gh_link("wiki")) }}{% endblock %}{% endraw +%}
+```
+
 Badge presets: `pypi`, `pypi-downloads`, `python`, `license`, `ci`, `codecov`, `npm`, `github-release`,
 `github-stars`, `pre-commit`, `ruff`, `version`, `modrinth`, `curseforge`, `hacs`, `ha-version`, plus donation presets `kofi`, `buymeacoffee`, `github-sponsors`,
 `patreon`, `paypal`. Add your own under `badges_custom`; set `badges_style: flat-square` (or pass
@@ -88,7 +95,7 @@ allow_exec: false                 # let cli_help() run commands during render
 badges_style: flat-square         # optional shields.io style for every badge
 related: [{repo: other-tool, description: Sibling project}]   # for related_repos()
 screenshots: {dir: docs/screenshots, width: 720, style: markdown}
-badges: [pypi, python, license, {preset: ci, workflow: test.yml}]
+badges: [pypi, python, license, {preset: ci, workflow: test.yml}, {shield: {label: Docs, message: latest, color: success}}]
 badges_custom:
   discord: {label: Discord, message: chat, color: 5865F2, link: https://discord.gg/xyz}
 donate: [kofi, github-sponsors]

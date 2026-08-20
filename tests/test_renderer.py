@@ -193,3 +193,18 @@ def test_shield_global_honours_badges_style(tmp_repo):
     )
     text = render(tmp_repo).text
     assert "badge/a-b-blue?style=flat-square" in text and "badge/c-d-blue?style=plastic" in text
+
+
+def test_badges_extra_and_donate_extra_hooks(tmp_repo):
+    write_config(tmp_repo, badges=["pypi"], donate=["kofi"], donate_handles={"kofi": "o"})
+    (tmp_repo / "README.md.j2").write_text(
+        '{% extends "base.md.j2" %}\n'
+        "{% block badges_extra %} {{ shield('docs', 'latest') }}{% endblock %}\n"
+        "{% block donate_extra %} {{ shield('tip', 'jar') }}{% endblock %}\n"
+    )
+    text = render(tmp_repo).text
+    lines = text.splitlines()
+    badge_line = next(ln for ln in lines if "pypi/v/demo-pkg" in ln)
+    assert badge_line.endswith("badge/docs-latest-blue)")
+    donate_line = next(ln for ln in lines if "ko-fi.com/o" in ln)
+    assert donate_line.endswith("badge/tip-jar-blue)")

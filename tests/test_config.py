@@ -35,7 +35,7 @@ def test_readme_yaml_overrides_autodetect(tmp_repo):
         BadgeSpec(preset="pypi"),
         BadgeSpec(preset="ci", options={"workflow": "test.yml"}),
     ]
-    assert cfg.donate == ["kofi"]
+    assert cfg.donate == [BadgeSpec(preset="kofi")]
     assert cfg.donate_handles["kofi"] == "octo"
     assert cfg.vars["channel"] == "#demo"
 
@@ -77,7 +77,7 @@ def test_user_config_loaded_from_xdg(no_user_config):
     )
     user = load_user_config()
     assert user is not None
-    assert user.donate == ["kofi"]
+    assert user.donate == [BadgeSpec(preset="kofi")]
     assert user.project.owner == "Me"
 
 
@@ -89,7 +89,7 @@ def test_resolve_ignores_user_config_by_default(tmp_repo, no_user_config):
     (no_user_config / "mkreadme").mkdir()
     (no_user_config / "mkreadme" / "config.yaml").write_text("donate: [kofi]\n")
     assert resolve(tmp_repo).donate == []
-    assert resolve(tmp_repo, use_user_config=True).donate == ["kofi"]
+    assert resolve(tmp_repo, use_user_config=True).donate == [BadgeSpec(preset="kofi")]
 
 
 def test_repo_config_wins_over_user_config(tmp_repo, no_user_config):
@@ -99,7 +99,7 @@ def test_repo_config_wins_over_user_config(tmp_repo, no_user_config):
     )
     (tmp_repo / "readme.yaml").write_text("donate: [patreon]\ndonate_handles: {patreon: repo}\n")
     cfg = resolve(tmp_repo, use_user_config=True)
-    assert cfg.donate == ["patreon"]
+    assert cfg.donate == [BadgeSpec(preset="patreon")]
     assert cfg.donate_handles == {"kofi": "me", "patreon": "repo"}
 
 
@@ -117,3 +117,33 @@ def test_config_sources_reports_both(tmp_repo):
     with (tmp_repo / "pyproject.toml").open("a") as fh:
         fh.write("\n[tool.readme]\nbadges = []\n")
     assert config_sources(tmp_repo) == ["readme.yaml", "pyproject.toml [tool.readme]"]
+
+
+def test_inline_shield_badge_spec():
+    cfg = Config.model_validate(
+        {"badges": ["pypi", {"shield": {"label": "Docs", "message": "latest", "color": "success"}}]}
+    )
+    assert cfg.badges[1].shield is not None and cfg.badges[1].shield.label == "Docs"
+    with pytest.raises(ValueError, match="preset"):
+        Config.model_validate({"badges": [{"workflow": "x.yml"}]})
+
+
+def test_badge_spec_serializes_compactly():
+    cfg = Config.model_validate(
+        {
+            "badges": [
+                "pypi",
+                {"preset": "ci", "workflow": "t.yml"},
+                {"shield": {"label": "a", "message": "b"}},
+            ],
+            "donate": ["kofi"],
+        }
+    )
+    dumped = cfg.model_dump(exclude_defaults=True, exclude_none=True)
+    assert dumped["badges"] == [
+        "pypi",
+        {"preset": "ci", "workflow": "t.yml"},
+        {"shield": {"label": "a", "message": "b"}},
+    ]
+    assert dumped["donate"] == ["kofi"]
+    assert Config.model_validate(dumped) == cfg

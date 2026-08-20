@@ -7,7 +7,7 @@
 A demo CLI that exists only to show off mkreadme
 </p>
 
-[![PyPI](https://img.shields.io/pypi/v/demo-tool?style=flat-square)](https://pypi.org/project/demo-tool/) [![Python](https://img.shields.io/pypi/pyversions/demo-tool?style=flat-square)](https://pypi.org/project/demo-tool/) [![License](https://img.shields.io/github/license/octocat/demo-tool?style=flat-square)](https://github.com/octocat/demo-tool/blob/main/LICENSE) [![CI](https://img.shields.io/github/actions/workflow/status/octocat/demo-tool/test.yml?style=flat-square)](https://github.com/octocat/demo-tool/actions/workflows/test.yml) [![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&style=flat-square)](https://github.com/pre-commit/pre-commit) [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json&style=flat-square)](https://github.com/astral-sh/ruff) [![version](https://img.shields.io/badge/version-1.4.0-informational?style=flat-square)](https://github.com/octocat/demo-tool) [![Discord](https://img.shields.io/badge/Discord-chat-5865F2?logo=discord&style=flat-square)](https://discord.gg/example) [![docs](https://img.shields.io/badge/docs-latest-success?style=flat-square)](https://github.com/octocat/demo-tool/wiki)
+[![PyPI](https://img.shields.io/pypi/v/demo-tool?style=flat-square)](https://pypi.org/project/demo-tool/) [![Python](https://img.shields.io/pypi/pyversions/demo-tool?style=flat-square)](https://pypi.org/project/demo-tool/) [![License](https://img.shields.io/github/license/octocat/demo-tool?style=flat-square)](https://github.com/octocat/demo-tool/blob/main/LICENSE) [![CI](https://img.shields.io/github/actions/workflow/status/octocat/demo-tool/test.yml?style=flat-square)](https://github.com/octocat/demo-tool/actions/workflows/test.yml) [![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&style=flat-square)](https://github.com/pre-commit/pre-commit) [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json&style=flat-square)](https://github.com/astral-sh/ruff) [![version](https://img.shields.io/badge/version-1.4.0-informational?style=flat-square)](https://github.com/octocat/demo-tool) [![Discord](https://img.shields.io/badge/Discord-chat-5865F2?logo=discord&style=flat-square)](https://discord.gg/example) [![Matrix](https://img.shields.io/badge/Matrix-chat-0DBD8B?logo=matrix&style=flat-square)](https://matrix.to/#/#example:matrix.org) [![docs](https://img.shields.io/badge/docs-latest-success?style=flat-square)](https://github.com/octocat/demo-tool/wiki)
 
 [![Ko-fi](https://img.shields.io/badge/Ko--fi-support-FF5E5B?logo=ko-fi&style=flat-square)](https://ko-fi.com/octocat) [![Sponsor](https://img.shields.io/github/sponsors/octocat?logo=githubsponsors&style=flat-square)](https://github.com/sponsors/octocat)
 
@@ -161,7 +161,7 @@ See the full [changelog](https://github.com/octocat/demo-tool/blob/main/CHANGELO
 > [!WARNING]
 > The line below changes on every commit, so `mkreadme check` will flag it; it is here only to demonstrate the helpers.
 
-Built from untagged (4a840ec) on 2026-08-20.
+Built from untagged (d25056f) on 2026-08-20.
 
 ## Contributing
 

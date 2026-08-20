@@ -160,7 +160,7 @@ def test_donation_handle_kw_override_and_missing():
 def test_badges_and_donate_badges_from_config():
     reg = make_registry(
         badges=[BadgeSpec(preset="pypi"), BadgeSpec(preset="ci", options={"workflow": "t.yml"})],
-        donate=["kofi"],
+        donate=[BadgeSpec(preset="kofi")],
         donate_handles={"kofi": "octo"},
     )
     all_badges = reg.render_all()
@@ -168,6 +168,15 @@ def test_badges_and_donate_badges_from_config():
     assert " " in all_badges and "\n" not in all_badges
     assert reg.render_donate().endswith("(https://ko-fi.com/octo)")
     assert make_registry().render_donate() == ""
+
+
+def test_inline_shield_in_badges_and_donate():
+    spec = BadgeSpec.model_validate(
+        {"shield": {"label": "Docs", "message": "latest", "color": "success", "link": "https://d"}}
+    )
+    reg = make_registry(badges=[BadgeSpec(preset="pypi"), spec], donate=[spec], badges_style="flat")
+    assert "badge/Docs-latest-success?style=flat)](https://d)" in reg.render_all()
+    assert reg.render_donate().startswith("[![Docs]")
 
 
 def test_names_lists_builtin_and_custom():
