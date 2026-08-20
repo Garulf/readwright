@@ -7,8 +7,9 @@ A Lovelace card for motion sensors
 
 ## Preview
 
-<a href="https://unsplash.com/photos/RFAHj4tI37Y"><img src="https://images.unsplash.com/photo-1545259741-2ea3ebf61fa3?auto=format&fit=crop&q=80&w=640" alt="Nest thermostat on a wall" width="640"></a>
-<br><sub>Photo by <a href="https://unsplash.com/@danlefeb?utm_source=motion-card&utm_medium=referral">Dan LeFebvre</a> on <a href="https://unsplash.com/?utm_source=motion-card&utm_medium=referral">Unsplash</a></sub>
+[![Nest thermostat on a wall](https://images.unsplash.com/photo-1545259741-2ea3ebf61fa3?auto=format&fit=crop&q=80&w=640)](https://unsplash.com/photos/RFAHj4tI37Y)
+
+*Photo by [Dan LeFebvre](https://unsplash.com/@danlefeb?utm_source=motion-card&utm_medium=referral) on [Unsplash](https://unsplash.com/?utm_source=motion-card&utm_medium=referral)*
 
 ## Installation
 

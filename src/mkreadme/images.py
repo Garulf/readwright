@@ -33,6 +33,11 @@ def md_image(src: str, alt: str) -> str:
     return f"![{alt}]({src})"
 
 
+def md_pair(dark: str, light: str, alt: str) -> str:
+    """GitHub-only trick: image fragments select light/dark variants in pure markdown."""
+    return f"![{alt}]({light}#gh-light-mode-only)![{alt}]({dark}#gh-dark-mode-only)"
+
+
 def picture_tag(dark: str, light: str, alt: str, width: int | None) -> str:
     return (
         "<picture>\n"
@@ -86,13 +91,13 @@ class ImageHelper:
         )
 
     def _render_shot(self, shot: Shot, alt: str, width: int | None, force_html: bool) -> str:
+        html_mode = force_html or bool(width) or self.config.screenshots.style == "html"
         if shot.is_pair:
-            return picture_tag(self._rel(shot.dark), self._rel(shot.light), alt, width)
+            dark, light = self._rel(shot.dark), self._rel(shot.light)
+            return picture_tag(dark, light, alt, width) if html_mode else md_pair(dark, light, alt)
         src = shot.single or shot.light or shot.dark
         assert src is not None
-        if force_html or width or self.config.screenshots.style == "html":
-            return img_tag(self._rel(src), alt, width)
-        return md_image(self._rel(src), alt)
+        return img_tag(self._rel(src), alt, width) if html_mode else md_image(self._rel(src), alt)
 
     def _missing(self, message: str) -> str:
         if self.config.strict:
@@ -172,16 +177,41 @@ class ImageHelper:
                 self.warn(f"screenshots order lists unknown names: {', '.join(missing)}")
             ordered = [by_name[n] for n in order if n in by_name]
             shots = ordered + [s for s in shots if s.name not in order]
+        columns = max(columns, 1)
+        captioned = [(shot, all_captions.get(shot.name, titleize(shot.name))) for shot in shots]
+        if self.config.screenshots.style == "html":
+            return self._html_gallery(captioned, columns, show_captions)
+        return self._markdown_gallery(captioned, columns, show_captions)
+
+    def _markdown_gallery(
+        self, shots: list[tuple[Shot, str]], columns: int, show_captions: bool
+    ) -> str:
+        def row(cells: list[str]) -> str:
+            padded = cells + [""] * (columns - len(cells))
+            return "| " + " | ".join(padded) + " |"
+
+        lines: list[str] = []
+        for i in range(0, len(shots), columns):
+            chunk = shots[i : i + columns]
+            lines.append(row([self._render_shot(s, c, None, False) for s, c in chunk]))
+            if i == 0:
+                lines.append(row([":---:"] * columns))
+            if show_captions:
+                lines.append(row([c.replace("|", "\\|") for _, c in chunk]))
+        return "\n".join(lines)
+
+    def _html_gallery(
+        self, shots: list[tuple[Shot, str]], columns: int, show_captions: bool
+    ) -> str:
         width = self.config.screenshots.width
         cells = []
-        for shot in shots:
-            caption = all_captions.get(shot.name, titleize(shot.name))
+        for shot, caption in shots:
             cell = self._render_shot(shot, caption, width, force_html=True)
             if show_captions:
                 cell += f"<br><sub>{html.escape(caption)}</sub>"
             cells.append(f'<td align="center">{cell}</td>')
         rows = [
             "<tr>\n" + "\n".join(cells[i : i + columns]) + "\n</tr>"
-            for i in range(0, len(cells), max(columns, 1))
+            for i in range(0, len(cells), columns)
         ]
         return "<table>\n" + "\n".join(rows) + "\n</table>"

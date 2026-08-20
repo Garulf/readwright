@@ -103,6 +103,7 @@ class BannerConfig(StrictModel):
     user: str | None = None
     photo_id: str | None = None
     link: str | None = None
+    html: bool = False
 
 
 class RelatedRepo(StrictModel):

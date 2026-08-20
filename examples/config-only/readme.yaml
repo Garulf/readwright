@@ -55,11 +55,12 @@ project:
 banner:
   unsplash: photo-1761141535933-7f8e9f468865   # CDN photo id or images.unsplash.com URL
   alt: Control panel with gauges, lights and switches
-  width: 1000                                  # requested CDN width; also the <img> width
+  width: 1000                                  # requested CDN width
   height: 280                                  # optional crop height
   credit: Tao Yuan                             # required by the Unsplash license; warns if missing
   user: peek_a_boo_who                         # Unsplash username for the credit link
   photo_id: R4Hv6RnF05Q                        # optional: links the image to its Unsplash page
+  html: false                                  # true: <img>/<div align=center> with a width attribute
   # image: docs/banner.png                     # alternative: a local file or URL instead of unsplash
   # link: https://example.com                  # optional click-through for local images
 

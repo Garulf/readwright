@@ -222,5 +222,5 @@ def test_banner_in_header_partial(tmp_repo):
     )
     text = render(tmp_repo).text
     head = text.split("# demo-pkg")[0]
-    assert '<p align="center">' in head and 'alt="hero"' in head and "Photo by" in head
-    assert render(tmp_repo).text.count('<p align="center">') == 1
+    assert "![hero](https://images.unsplash.com/photo-1518770660439-4636190af475" in head
+    assert "*Photo by [A]" in head and "<" not in head.split("-->")[1]

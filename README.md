@@ -65,7 +65,7 @@ plus Minecraft mod, HACS card and Flow Launcher plugin examples.
 | `badge("pypi")`, `badge("ci", workflow="test.yml")` | Preset badge built from repo metadata |
 | `shield("Discord", "chat", "5865F2", link=...)` | Custom shields.io static badge |
 | `badges()` / `donate_badges()` | All badges from `badges:` / `donate:` in config |
-| `screenshot("main", alt=..., width=...)` | Finds `docs/screenshots/main.{png,jpg,gif,webp,svg}`; `main-dark.*` + `main-light.*` become a theme-aware `<picture>` |
+| `screenshot("main", alt=..., width=...)` | Finds `docs/screenshots/main.{png,jpg,gif,webp,svg}`; `main-dark.*` + `main-light.*` become a theme-aware pair |
 | `screenshots(columns=2)` | Gallery table of every image in the screenshots dir |
 | `image("path/or/url", "alt", width=...)` | Explicit image, no discovery |
 | `screenshots(order=[...], captions={...}, subdir=...)` | Control gallery order/captions (or drop a `captions.yaml` in the folder) |
@@ -98,6 +98,11 @@ Blocks in `base.md.j2`: `header`, `badges`, `donate`, `toc`, `screenshots`, `ins
 `contributing`, `license`. Any packaged partial can be shadowed by a file of the same name under
 `templates/partials/` in the repo (or `~/.config/mkreadme/templates/` for all your repos).
 
+Image helpers emit plain markdown by default (dark/light pairs use GitHub's
+`#gh-light-mode-only`/`#gh-dark-mode-only` fragments instead of `<picture>`), and only fall back to HTML
+when you ask for something markdown can't do, like a `width=`. Set `screenshots.style: html` to always
+get `<img>`/`<picture>`/`<table>` output, or pass `html=True` to `unsplash()`/`banner:`.
+
 ## Configuration
 
 `readme.yaml` in the repo root (or `[tool.readme]` in `pyproject.toml`); see
@@ -117,7 +122,7 @@ allow_exec: false                 # let cli_help() run commands during render
 badges_style: flat-square         # optional shields.io style for every badge
 related: [{repo: other-tool, description: Sibling project}]   # for related_repos()
 banner: {unsplash: photo-1518770660439-4636190af475, credit: Alexandre Debiève, user: alexkixa}
-screenshots: {dir: docs/screenshots, width: 720, style: markdown}
+screenshots: {dir: docs/screenshots, width: 720, style: markdown}   # style: html for width/alignment
 badges: [pypi, python, license, {preset: ci, workflow: test.yml}, {shield: {label: Docs, message: latest, color: success}}]
 badges_custom:
   discord: {label: Discord, message: chat, color: 5865F2, link: https://discord.gg/xyz}

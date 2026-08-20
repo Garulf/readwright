@@ -95,7 +95,7 @@ def test_layout_helpers(tmp_repo):
     assert h.callout("note", "line1\n\nline2") == "> [!NOTE]\n> line1\n>\n> line2"
     with pytest.raises(ValueError):
         h.callout("bogus", "x")
-    assert h.center("<b>x</b>") == '<p align="center">\n<b>x</b>\n</p>'
+    assert h.center("<b>x</b>") == '<div align="center">\n\n<b>x</b>\n\n</div>'
     cols = h.columns(["a", "b"])
     assert cols.count("<td") == 2 and cols.startswith("<table>")
 
@@ -105,11 +105,14 @@ def test_logo_and_video(tmp_repo):
     h = make(tmp_repo, warnings)
     assert h.logo() == "" and warnings
     (tmp_repo / "docs" / "logo.svg").write_text("<svg/>")
-    assert h.logo() == '<img src="docs/logo.svg" alt="demo-pkg" width="120">'
-    assert h.logo(width=None, alt="L") == '<img src="docs/logo.svg" alt="L">'
+    assert h.logo() == "![demo-pkg](docs/logo.svg)"
+    assert h.logo(width=120, alt="L") == '<img src="docs/logo.svg" alt="L" width="120">'
     (tmp_repo / "logo-dark.png").write_bytes(b"x")
     (tmp_repo / "logo-light.png").write_bytes(b"x")
-    assert "<picture>" in h.logo() and 'srcset="logo-dark.png"' in h.logo()
+    assert h.logo() == (
+        "![demo-pkg](logo-light.png#gh-light-mode-only)![demo-pkg](logo-dark.png#gh-dark-mode-only)"
+    )
+    assert "<picture>" in h.logo(width=96) and 'srcset="logo-dark.png"' in h.logo(width=96)
     (tmp_repo / "docs" / "screenshots" / "demo.mp4").write_bytes(b"x")
     assert h.video("demo") == '<video src="docs/screenshots/demo.mp4" controls muted loop></video>'
     (tmp_repo / "docs" / "demo2.gif").write_bytes(b"x")
@@ -121,7 +124,10 @@ def test_logo_and_video(tmp_repo):
 def test_contributors(tmp_repo):
     h = make(tmp_repo)
     md = h.contributors(["octo", "cat"], size=32)
-    assert md.count("<a href=") == 2 and "github.com/octo.png?size=32" in md
+    assert md == (
+        "[![octo](https://github.com/octo.png?size=32)](https://github.com/octo) "
+        "[![cat](https://github.com/cat.png?size=32)](https://github.com/cat)"
+    )
     (tmp_repo / ".all-contributorsrc").write_text('{"contributors": [{"login": "zed"}]}')
     assert "github.com/zed" in h.contributors()
     warnings = []
@@ -207,16 +213,18 @@ def test_unsplash_helper(tmp_repo):
         user="alexkixa",
         photo_id="FO7JIlwjOtU",
     )
-    assert md.startswith('<a href="https://unsplash.com/photos/FO7JIlwjOtU"><img src="')
-    assert (
-        "images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&q=80&w=800" in md
+    src = "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&q=80&w=800"
+    assert md == (
+        f"[![Circuit board]({src})](https://unsplash.com/photos/FO7JIlwjOtU)\n\n"
+        "*Photo by [Alexandre Debiève](https://unsplash.com/@alexkixa?utm_source=demo-repo"
+        "&utm_medium=referral) on [Unsplash](https://unsplash.com/?utm_source=demo-repo"
+        "&utm_medium=referral)*"
     )
-    assert 'alt="Circuit board" width="800">' in md
-    assert (
-        'Photo by <a href="https://unsplash.com/@alexkixa?utm_source=demo-repo&utm_medium=referral">'
-        in md
+    as_html = h.unsplash(
+        "photo-1518770660439-4636190af475", credit="A", user="a", width=800, html=True
     )
-    assert "Alexandre Debi" in md and 'utm_medium=referral">Unsplash</a></sub>' in md
+    assert as_html.startswith('<img src="') and 'width="800">' in as_html
+    assert "<br><sub>Photo by <a href=" in as_html
     url_form = h.unsplash(
         "https://images.unsplash.com/photo-1518770660439-4636190af475?w=1&q=2",
         credit="X",
@@ -225,7 +233,7 @@ def test_unsplash_helper(tmp_repo):
     assert "&h=300" in url_form and "photo-1518770660439-4636190af475?" in url_form
     warnings = []
     bare = make(tmp_repo, warnings).unsplash("1518770660439-4636190af475", width=None)
-    assert bare.startswith("<img src=") and "width=" not in bare and "Photo by" not in bare
+    assert bare.startswith("![Photo from Unsplash](") and "Photo by" not in bare
     assert warnings and "attribution" in warnings[0]
     with pytest.raises(ValueError, match="photo id"):
         h.unsplash("https://unsplash.com/photos/FO7JIlwjOtU")
@@ -235,16 +243,23 @@ def test_banner_helper(tmp_repo):
     from mkreadme.config import BannerConfig
 
     assert make(tmp_repo).banner() == ""
-    h = make(
-        tmp_repo,
-        banner=BannerConfig(
-            unsplash="photo-1518770660439-4636190af475", credit="A", user="a", width=600
-        ),
+    cfg = BannerConfig(unsplash="photo-1518770660439-4636190af475", credit="A", user="a", width=600)
+    md = make(tmp_repo, banner=cfg).banner()
+    assert md.startswith("![Photo from Unsplash](") and "*Photo by [A]" in md
+    assert "w=600" in md and "<" not in md
+    cfg = BannerConfig(
+        unsplash="photo-1518770660439-4636190af475", credit="A", width=600, html=True
     )
-    assert "Photo by" in h.banner() and 'width="600"' in h.banner()
+    md = make(tmp_repo, banner=cfg).banner()
+    assert md.startswith('<div align="center">\n\n<img src="') and 'width="600"' in md
     (tmp_repo / "docs" / "banner.png").write_bytes(b"x")
-    h = make(tmp_repo, banner=BannerConfig(image="docs/banner.png", link="https://x", width=None))
-    assert h.banner() == '<a href="https://x"><img src="docs/banner.png" alt="demo-pkg"></a>'
+    cfg = BannerConfig(image="docs/banner.png", link="https://x", width=None)
+    assert make(tmp_repo, banner=cfg).banner() == "[![demo-pkg](docs/banner.png)](https://x)"
+    cfg = BannerConfig(image="docs/banner.png", link="https://x", html=True)
+    assert make(tmp_repo, banner=cfg).banner() == (
+        '<div align="center">\n\n<a href="https://x">'
+        '<img src="docs/banner.png" alt="demo-pkg" width="1200"></a>\n\n</div>'
+    )
     warnings = []
     make(tmp_repo, warnings, banner=BannerConfig(image="nope.png")).banner()
     assert warnings and "nope.png" in warnings[0]

@@ -29,8 +29,14 @@ def test_screenshot_html_style_without_width(tmp_repo):
     assert md == '<img src="docs/screenshots/main.png" alt="Main">'
 
 
-def test_screenshot_dark_light_picture(tmp_repo):
+def test_screenshot_dark_light_markdown_pair(tmp_repo):
     md = helper(tmp_repo).screenshot("settings")
+    dark, light = "docs/screenshots/settings-dark.png", "docs/screenshots/settings-light.png"
+    assert md == f"![Settings]({light}#gh-light-mode-only)![Settings]({dark}#gh-dark-mode-only)"
+
+
+def test_screenshot_dark_light_picture_in_html_style(tmp_repo):
+    md = helper(tmp_repo, style="html", width=None).screenshot("settings")
     dark, light = "docs/screenshots/settings-dark.png", "docs/screenshots/settings-light.png"
     assert md == (
         "<picture>\n"
@@ -86,22 +92,35 @@ def test_image_missing_local_warns_but_still_emits(tmp_repo):
     assert warnings and "nope.png" in warnings[0]
 
 
-def test_screenshots_gallery(tmp_repo):
+def test_screenshots_gallery_markdown(tmp_repo):
     (tmp_repo / "docs" / "screenshots" / "zeta-view.png").write_bytes(b"x")
     md = helper(tmp_repo).screenshots()
     lines = md.splitlines()
-    assert lines[0] == "<table>"
-    assert lines[-1] == "</table>"
-    assert md.count("<tr>") == 2
-    assert md.count("<td") == 3
+    assert lines[0] == (
+        "| ![Main](docs/screenshots/main.png) | ![Settings](docs/screenshots/settings-light.png"
+        "#gh-light-mode-only)![Settings](docs/screenshots/settings-dark.png#gh-dark-mode-only) |"
+    )
+    assert lines[1] == "| :---: | :---: |"
+    assert lines[2] == "| Main | Settings |"
+    assert lines[3] == "| ![Zeta View](docs/screenshots/zeta-view.png) |  |"
+    assert lines[4] == "| Zeta View |  |"
+    assert "<" not in md
+
+
+def test_screenshots_gallery_html_style(tmp_repo):
+    (tmp_repo / "docs" / "screenshots" / "zeta-view.png").write_bytes(b"x")
+    md = helper(tmp_repo, style="html").screenshots()
+    lines = md.splitlines()
+    assert lines[0] == "<table>" and lines[-1] == "</table>"
+    assert md.count("<tr>") == 2 and md.count("<td") == 3
     assert md.index("main.png") < md.index("settings-light.png") < md.index("zeta-view.png")
-    assert "<picture>" in md
-    assert 'alt="Zeta View"' in md
-    assert 'width="720"' in md
+    assert "<picture>" in md and 'alt="Zeta View"' in md and 'width="720"' in md
+    assert "<sub>Main</sub>" in md
 
 
 def test_screenshots_gallery_columns_and_empty(tmp_repo):
-    assert helper(tmp_repo).screenshots(columns=1).count("<tr>") == 2
+    assert helper(tmp_repo, style="html").screenshots(columns=1).count("<tr>") == 2
+    assert helper(tmp_repo).screenshots(columns=1).splitlines()[1] == "| :---: |"
     for f in (tmp_repo / "docs" / "screenshots").iterdir():
         f.unlink()
     warnings = []
@@ -120,10 +139,9 @@ def test_screenshots_captions_order_and_subdir(tmp_repo):
     (shots / "captions.yaml").write_text("main: The main window\n")
     md = helper(tmp_repo).screenshots(order=["settings", "main"])
     assert md.index("settings-light.png") < md.index("main.png")
-    assert "<sub>The main window</sub>" in md and 'alt="The main window"' in md
-    assert "<sub>Settings</sub>" in md
+    assert "| Settings | The main window |" in md and "![The main window]" in md
     md = helper(tmp_repo).screenshots(captions={"settings": "Prefs"}, show_captions=False)
-    assert 'alt="Prefs"' in md and "<sub>" not in md
+    assert "![Prefs]" in md and len(md.splitlines()) == 2
     sub = shots / "mobile"
     sub.mkdir()
     (sub / "phone.png").write_bytes(b"x")

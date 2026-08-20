@@ -9,16 +9,9 @@ A demo package
 
 ## Screenshots
 
-<table>
-<tr>
-<td align="center"><img src="docs/screenshots/main.png" alt="Main" width="720"><br><sub>Main</sub></td>
-<td align="center"><picture>
-  <source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/settings-dark.png">
-  <source media="(prefers-color-scheme: light)" srcset="docs/screenshots/settings-light.png">
-  <img src="docs/screenshots/settings-light.png" alt="Settings" width="720">
-</picture><br><sub>Settings</sub></td>
-</tr>
-</table>
+| ![Main](docs/screenshots/main.png) | ![Settings](docs/screenshots/settings-light.png#gh-light-mode-only)![Settings](docs/screenshots/settings-dark.png#gh-dark-mode-only) |
+| :---: | :---: |
+| Main | Settings |
 
 ## Installation
 

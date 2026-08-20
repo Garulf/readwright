@@ -34,6 +34,10 @@ UNSPLASH_PHOTO = re.compile(r"(?:photo-)?(?P<id>\d{10,}-[0-9a-f]{10,})")
 MY_HA = "https://my.home-assistant.io"
 
 
+def _escape(text: str) -> str:
+    return html.escape(text, quote=True)
+
+
 def fenced(text: str, language: str = "") -> str:
     fence = "````" if "```" in text else "```"
     return f"{fence}{language}\n{text.rstrip()}\n{fence}"
@@ -235,7 +239,8 @@ class Helpers:
 
     @staticmethod
     def center(content: str) -> str:
-        return f'<p align="center">\n{content.strip()}\n</p>'
+        """Centered block; the blank lines let GitHub render markdown inside the div."""
+        return f'<div align="center">\n\n{content.strip()}\n\n</div>'
 
     @staticmethod
     def columns(cells: list[str], align: str = "center") -> str:
@@ -254,26 +259,31 @@ class Helpers:
                 return shots / f"{stem}.{ext}"
         return None
 
-    def logo(self, width: int | None = 120, alt: str | None = None, name: str = "logo") -> str:
+    def logo(self, width: int | None = None, alt: str | None = None, name: str = "logo") -> str:
         alt = alt or self.config.project.name or "logo"
         dark = self._find_asset(f"{name}-dark", LOGO_EXTENSIONS)
         light = self._find_asset(f"{name}-light", LOGO_EXTENSIONS)
         single = self._find_asset(name, LOGO_EXTENSIONS)
-        width_attr = f' width="{width}"' if width else ""
         rel = lambda p: p.relative_to(self.root).as_posix()  # noqa: E731
         if dark and light:
+            if width:
+                return (
+                    "<picture>\n"
+                    f'  <source media="(prefers-color-scheme: dark)" srcset="{rel(dark)}">\n'
+                    f'  <source media="(prefers-color-scheme: light)" srcset="{rel(light)}">\n'
+                    f'  <img src="{rel(light)}" alt="{_escape(alt)}" width="{width}">\n'
+                    "</picture>"
+                )
             return (
-                "<picture>\n"
-                f'  <source media="(prefers-color-scheme: dark)" srcset="{rel(dark)}">\n'
-                f'  <source media="(prefers-color-scheme: light)" srcset="{rel(light)}">\n'
-                f'  <img src="{rel(light)}" alt="{html.escape(alt)}"{width_attr}>\n'
-                "</picture>"
+                f"![{alt}]({rel(light)}#gh-light-mode-only)![{alt}]({rel(dark)}#gh-dark-mode-only)"
             )
         src = single or light or dark
         if src is None:
             self.warn(f"logo: no {name}.{{svg,png,webp,jpg}} found")
             return ""
-        return f'<img src="{rel(src)}" alt="{html.escape(alt)}"{width_attr}>'
+        if width:
+            return f'<img src="{rel(src)}" alt="{_escape(alt)}" width="{width}">'
+        return f"![{alt}]({rel(src)})"
 
     def video(self, name: str, width: int | None = None, alt: str | None = None) -> str:
         if "://" in name:
@@ -287,7 +297,7 @@ class Helpers:
         alt = alt or name
         width_attr = f' width="{width}"' if width else ""
         if src.lower().endswith(".gif"):
-            return f'<img src="{src}" alt="{html.escape(alt)}"{width_attr}>'
+            return f'<img src="{src}" alt="{_escape(alt)}"{width_attr}>'
         return f'<video src="{src}"{width_attr} controls muted loop></video>'
 
     def contributors(self, logins: list[str] | None = None, size: int = 64) -> str:
@@ -297,13 +307,10 @@ class Helpers:
                 self.warn("contributors: pass a list or add .all-contributorsrc")
                 return ""
             logins = [c["login"] for c in json.loads(rc.read_text()).get("contributors", [])]
-        cells = [
-            f'<a href="https://github.com/{login}">'
-            f'<img src="https://github.com/{login}.png?size={size}" width="{size}" alt="{login}">'
-            "</a>"
+        return " ".join(
+            f"[![{login}](https://github.com/{login}.png?size={size})](https://github.com/{login})"
             for login in logins
-        ]
-        return '<p align="center">\n' + "\n".join(cells) + "\n</p>"
+        )
 
     # -------------------------------------------------------------- project
     def pyversions_list(self, sep: str = ", ") -> str:
@@ -375,8 +382,13 @@ class Helpers:
         photo_id: str | None = None,
         link: str | None = None,
         quality: int = 80,
+        html: bool = False,
     ) -> str:
-        """Embed an Unsplash photo by CDN id or images.unsplash.com URL, with attribution."""
+        """Embed an Unsplash photo by CDN id or images.unsplash.com URL, with attribution.
+
+        `width`/`height` are what the CDN is asked for; the image is plain markdown unless
+        `html=True`, which also sets the <img> width attribute.
+        """
         match = UNSPLASH_PHOTO.search(photo)
         if not match:
             raise ValueError(
@@ -390,11 +402,16 @@ class Helpers:
             params["h"] = height
         src = f"{UNSPLASH_CDN}/photo-{match['id']}?{urlencode(params)}"
         alt = alt or "Photo from Unsplash"
-        width_attr = f' width="{width}"' if width else ""
-        image = f'<img src="{src}" alt="{html.escape(alt, quote=True)}"{width_attr}>'
         page = link or (f"https://unsplash.com/photos/{photo_id}" if photo_id else None)
-        if page:
-            image = f'<a href="{page}">{image}</a>'
+        if html:
+            width_attr = f' width="{width}"' if width else ""
+            image = f'<img src="{src}" alt="{_escape(alt)}"{width_attr}>'
+            if page:
+                image = f'<a href="{page}">{image}</a>'
+        else:
+            image = f"![{alt}]({src})"
+            if page:
+                image = f"[{image}]({page})"
         if not credit:
             self.warn(
                 f"unsplash: no credit given for photo {match['id']}; "
@@ -406,18 +423,21 @@ class Helpers:
             if user
             else f"https://unsplash.com/?{self._utm()}"
         )
-        attribution = (
-            f'Photo by <a href="{profile}">{html.escape(credit)}</a> on '
-            f'<a href="https://unsplash.com/?{self._utm()}">Unsplash</a>'
-        )
-        return f"{image}\n<br><sub>{attribution}</sub>"
+        site = f"https://unsplash.com/?{self._utm()}"
+        if html:
+            attribution = (
+                f'Photo by <a href="{profile}">{_escape(credit)}</a> on '
+                f'<a href="{site}">Unsplash</a>'
+            )
+            return f"{image}\n<br><sub>{attribution}</sub>"
+        return f"{image}\n\n*Photo by [{credit}]({profile}) on [Unsplash]({site})*"
 
     def banner(self) -> str:
         cfg = self.config.banner
         if cfg is None:
             return ""
         if cfg.unsplash:
-            return self.unsplash(
+            rendered = self.unsplash(
                 cfg.unsplash,
                 alt=cfg.alt,
                 width=cfg.width,
@@ -426,16 +446,25 @@ class Helpers:
                 user=cfg.user,
                 photo_id=cfg.photo_id,
                 link=cfg.link,
+                html=cfg.html,
             )
-        if cfg.image:
+        elif cfg.image:
             alt = cfg.alt or self.config.project.name or "banner"
-            width_attr = f' width="{cfg.width}"' if cfg.width else ""
             if "://" not in cfg.image and not (self.root / cfg.image).is_file():
                 self.warn(f"banner image '{cfg.image}' not found")
-            image = f'<img src="{cfg.image}" alt="{html.escape(alt, quote=True)}"{width_attr}>'
-            return f'<a href="{cfg.link}">{image}</a>' if cfg.link else image
-        self.warn("banner: set either 'unsplash' or 'image'")
-        return ""
+            if cfg.html:
+                width_attr = f' width="{cfg.width}"' if cfg.width else ""
+                rendered = f'<img src="{cfg.image}" alt="{_escape(alt)}"{width_attr}>'
+                if cfg.link:
+                    rendered = f'<a href="{cfg.link}">{rendered}</a>'
+            else:
+                rendered = f"![{alt}]({cfg.image})"
+                if cfg.link:
+                    rendered = f"[{rendered}]({cfg.link})"
+        else:
+            self.warn("banner: set either 'unsplash' or 'image'")
+            return ""
+        return self.center(rendered) if cfg.html else rendered
 
     # ----------------------------------------------------------------- meta
     def _git(self, *args: str) -> str:
