@@ -142,3 +142,40 @@ def test_install_partial_per_project_type(tmp_path, files, expected):
     for name, content in files.items():
         (tmp_path / name).write_text(content)
     assert expected in render(tmp_path).text
+
+
+def test_changelog_and_toc_depth_globals(tmp_repo):
+    (tmp_repo / "CHANGELOG.md").write_text("## 1.0\n- first\n## 0.9\n- old\n")
+    (tmp_repo / "README.md.j2").write_text(
+        "{{ toc(1, 2) }}\n# Top\n## Latest\n### deep\n{{ changelog() }}\n"
+    )
+    text = render(tmp_repo).text
+    assert "- [Top](#top)\n  - [Latest](#latest)" in text and "[deep]" not in text
+    assert "## 1.0\n- first" in text and "0.9" not in text
+
+
+def test_extra_template_paths_and_sources(tmp_repo, tmp_path):
+    shared = tmp_path / "shared" / "partials"
+    shared.mkdir(parents=True)
+    (shared / "contributing.md.j2").write_text("## Shared contributing\n")
+    write_config(tmp_repo, templates=[str(tmp_path / "shared")])
+    result = render(tmp_repo, user_templates=tmp_path / "nope")
+    assert "## Shared contributing" in result.text
+    assert result.sources["partials/contributing.md.j2"] == str(tmp_path / "shared")
+    assert result.sources["base.md.j2"] == "mkreadme"
+    assert result.sources["partials/header.md.j2"] == "mkreadme"
+
+
+def test_pkg_template_path(tmp_repo, tmp_path):
+    write_config(tmp_repo, templates=["pkg:mkreadme/templates"])
+    result = render(tmp_repo, user_templates=tmp_path / "nope")
+    assert result.sources["base.md.j2"] == "pkg:mkreadme/templates"
+
+
+def test_repo_template_beats_extra_paths(tmp_repo, tmp_path):
+    shared = tmp_path / "shared"
+    shared.mkdir()
+    (shared / "README.md.j2").write_text("shared\n")
+    (tmp_repo / "README.md.j2").write_text("repo\n")
+    write_config(tmp_repo, templates=[str(shared)])
+    assert render(tmp_repo).text.endswith("repo\n")

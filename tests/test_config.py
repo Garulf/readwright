@@ -107,3 +107,13 @@ def test_config_model_roundtrip():
     cfg = Config.model_validate({"badges": ["pypi"], "screenshots": {"width": 400}})
     assert cfg.screenshots.width == 400
     assert cfg.screenshots.style == "markdown"
+
+
+def test_config_sources_reports_both(tmp_repo):
+    from mkreadme.config import config_sources
+
+    assert config_sources(tmp_repo) == []
+    (tmp_repo / "readme.yaml").write_text("badges: [pypi]\n")
+    with (tmp_repo / "pyproject.toml").open("a") as fh:
+        fh.write("\n[tool.readme]\nbadges = []\n")
+    assert config_sources(tmp_repo) == ["readme.yaml", "pyproject.toml [tool.readme]"]

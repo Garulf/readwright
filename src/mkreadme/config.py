@@ -78,6 +78,7 @@ class CustomBadge(StrictModel):
 
 class Config(StrictModel):
     template: str = DEFAULT_TEMPLATE
+    templates: list[str] = Field(default_factory=list)
     output: str = "README.md"
     strict: bool = False
     screenshots: ScreenshotsConfig = Field(default_factory=ScreenshotsConfig)
@@ -125,6 +126,15 @@ def _read_tool_readme(root: Path) -> dict[str, Any] | None:
 def find_config_path(root: Path) -> Path | None:
     path = root / DEFAULT_CONFIG_NAME
     return path if path.is_file() else None
+
+
+def config_sources(root: Path) -> list[str]:
+    found = []
+    if find_config_path(root) is not None:
+        found.append(DEFAULT_CONFIG_NAME)
+    if _read_tool_readme(root) is not None:
+        found.append("pyproject.toml [tool.readme]")
+    return found
 
 
 def load_config_data(root: Path, config_path: Path | None = None) -> tuple[dict[str, Any], str]:
