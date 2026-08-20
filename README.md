@@ -55,6 +55,9 @@ Run `{{ project.name }} --help`.
 {% endblock %}
 ```
 
+See [`examples/`](https://github.com/Garulf/mkreadme/tree/main/examples) for a kitchen-sink project using every helper,
+plus Minecraft mod, HACS card and Flow Launcher plugin examples.
+
 ## Template helpers
 
 | Helper | Result |

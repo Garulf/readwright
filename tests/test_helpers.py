@@ -49,6 +49,11 @@ def test_cli_help_gated(tmp_repo):
         make(tmp_repo).cli_help("echo hi")
     out = make(tmp_repo, allow_exec=True).cli_help("echo hi")
     assert out == "```text\nhi\n```"
+    warnings = []
+    assert make(tmp_repo, warnings, allow_exec=True).cli_help("definitely-not-a-cmd") == ""
+    assert warnings
+    with pytest.raises(FileNotFoundError):
+        make(tmp_repo, allow_exec=True, strict=True).cli_help("definitely-not-a-cmd")
 
 
 def test_config_table_and_env_table(tmp_repo):

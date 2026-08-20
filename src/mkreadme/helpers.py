@@ -124,9 +124,16 @@ class Helpers:
                 "(it runs the command during render)"
             )
         env = {**os.environ, "NO_COLOR": "1", "TERM": "dumb", "COLUMNS": "80"}
-        result = subprocess.run(
-            shlex.split(command), capture_output=True, text=True, cwd=self.root, env=env
-        )
+        try:
+            result = subprocess.run(
+                shlex.split(command), capture_output=True, text=True, cwd=self.root, env=env
+            )
+        except FileNotFoundError:
+            message = f"cli_help: executable not found for {command!r}"
+            if self.config.strict:
+                raise FileNotFoundError(message) from None
+            self.warn(message)
+            return ""
         output = result.stdout or result.stderr
         if strip_ansi:
             output = re.sub(r"\x1b\[[0-9;]*[A-Za-z]", "", output)

@@ -1,0 +1,16 @@
+{% extends "base.md.j2" %}
+
+{% block install %}
+## Installation
+
+{{ my_ha_link("hacs_repository", owner=project.owner, repository=project.repo, category="plugin") }}
+
+Or add `{{ project.owner }}/{{ project.repo }}` as a custom repository in HACS, then
+{{ my_ha_link("lovelace_resources", "add the resource") }}.
+{% endblock %}
+
+{% block usage %}
+## Usage
+
+{{ code_block("docs/example.yaml") }}
+{% endblock %}

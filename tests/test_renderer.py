@@ -151,7 +151,7 @@ def test_changelog_and_toc_depth_globals(tmp_repo):
     )
     text = render(tmp_repo).text
     assert "- [Top](#top)\n  - [Latest](#latest)" in text and "[deep]" not in text
-    assert "## 1.0\n- first" in text and "0.9" not in text
+    assert "### 1.0\n- first" in text and "0.9" not in text
 
 
 def test_extra_template_paths_and_sources(tmp_repo, tmp_path):
@@ -184,3 +184,12 @@ def test_repo_template_beats_extra_paths(tmp_repo, tmp_path):
 def test_install_partial_flow_plugin(tmp_path):
     (tmp_path / "plugin.json").write_text('{"ActionKeyword": "x", "Name": "My Plugin"}')
     assert "pm install My Plugin" in render(tmp_path).text
+
+
+def test_shield_global_honours_badges_style(tmp_repo):
+    write_config(tmp_repo, badges_style="flat-square")
+    (tmp_repo / "README.md.j2").write_text(
+        "{{ shield('a', 'b') }} {{ shield('c', 'd', style='plastic') }}\n"
+    )
+    text = render(tmp_repo).text
+    assert "badge/a-b-blue?style=flat-square" in text and "badge/c-d-blue?style=plastic" in text

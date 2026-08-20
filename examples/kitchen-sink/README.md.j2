@@ -1,0 +1,74 @@
+{% extends "base.md.j2" %}
+
+{% block header %}
+{{ center(logo(width=96) ~ "\n\n# " ~ project.name ~ "\n\n" ~ project.tagline) }}
+{% endblock %}
+
+{% block badges %}
+{{ badges() }} {{ badge("discord") }} {{ shield("docs", "latest", "success", link=gh_link("wiki")) }}
+{% endblock %}
+
+{% block toc %}
+{{ toc() }}
+{% endblock %}
+
+{% block usage %}
+## Usage
+
+{{ include_file("docs/usage.md") }}
+
+{{ cli_help("python3 -m demo_tool.cli --help") }}
+
+{{ callout("tip", "Use `--format json` to pipe the output into other tools.") }}
+
+{{ details("How the parser is built", snippet("demo_tool/cli.py", "# begin-parser", "# end-parser", language="python")) }}
+
+### Configuration
+
+`[tool.demo-tool]` in `pyproject.toml`:
+
+{{ config_table("pyproject.toml", section="tool.demo-tool", headers=("Option", "Default")) }}
+
+Environment variables (`.env.example`):
+
+{{ env_table() }}
+
+### Commands
+
+{{ entry_points_table() }}
+
+Supports Python {{ pyversions_list(" / ") }}.
+
+### Mobile
+
+{{ columns([screenshot("mobile/phone", width=200), "Works on small screens too.\n\n" ~ video("https://example.com/demo.mp4", width=200)]) }}
+
+{{ screenshots(subdir="mobile", columns=1) }}
+{% endblock %}
+
+{% block extra %}
+## What's new
+
+{{ changelog() }}
+
+See the full {{ gh_link("blob/main/CHANGELOG.md", "changelog") }} and the
+{{ gh_link("releases/latest", "latest release") }}.
+
+## Related projects
+
+{{ related_repos() }}
+
+## Contributors
+
+{{ contributors(size=48) }}
+
+{{ callout("warning", "The line below changes on every commit, so `mkreadme check` will flag it; it is here only to demonstrate the helpers.") }}
+
+Built from {{ git_tag() or "untagged" }} ({{ git_sha() }}) on {{ today() }}.
+{% endblock %}
+
+{% block license %}
+## License
+
+{{ spdx_link() }}
+{% endblock %}

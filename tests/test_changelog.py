@@ -22,7 +22,10 @@ def test_split_entries_skips_unreleased():
 
 def test_latest_entries(tmp_path):
     (tmp_path / "CHANGELOG.md").write_text(LOG)
-    assert latest_entries(tmp_path).startswith("## [1.1.0]")
+    assert latest_entries(tmp_path).startswith("### [1.1.0]")
+    assert "\n#### Added\n" in latest_entries(tmp_path)
+    assert latest_entries(tmp_path, level=2).startswith("## [1.1.0]")
+    assert latest_entries(tmp_path, level=4).startswith("#### [1.1.0]")
     assert latest_entries(tmp_path, 2).count("## [") == 2
     assert latest_entries(tmp_path, path="nope.md") == ""
 

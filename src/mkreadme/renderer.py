@@ -16,7 +16,7 @@ from jinja2 import (
     TemplateNotFound,
 )
 
-from mkreadme.badges import BadgeRegistry, shield
+from mkreadme.badges import BadgeRegistry, apply_style, shield
 from mkreadme.changelog import latest_entries
 from mkreadme.config import DEFAULT_TEMPLATE, Config, user_templates_dir
 from mkreadme.helpers import Helpers
@@ -130,19 +130,23 @@ class Renderer:
             badge=self.badges.render,
             badges=self.badges.render_all,
             donate_badges=self.badges.render_donate,
-            shield=shield,
+            shield=self._styled_shield,
             screenshot=self.images.screenshot,
             screenshots=self.images.screenshots,
             image=self.images.image,
             has_screenshots=self.images.has_screenshots,
             toc=toc_token,
-            changelog=lambda n=1, path=None: latest_entries(self.root, n, path),
+            changelog=lambda n=1, path=None, level=3: latest_entries(self.root, n, path, level),
             project=self.config.project,
             vars=self.config.vars,
             config=self.config,
             **self.helpers.as_globals(),
         )
         return env
+
+    def _styled_shield(self, *args, **kwargs) -> str:
+        style = kwargs.pop("style", None) or self.config.badges_style
+        return apply_style(shield(*args, **kwargs), style)
 
     def source_label(self, name: str) -> str:
         for loader in self.loaders:

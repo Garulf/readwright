@@ -28,8 +28,19 @@ def split_entries(text: str) -> list[str]:
     return [e for e in entries if not e.lower().startswith("## [unreleased]")]
 
 
-def latest_entries(root: Path, n: int = 1, path: str | None = None) -> str:
+HEADING_LINE = re.compile(r"^(#+)(\s+)", re.MULTILINE)
+
+
+def relevel(entry: str, level: int) -> str:
+    """Shift headings so the entry's own `##` heading becomes `level` hashes deep."""
+    shift = level - 2
+    if shift == 0:
+        return entry
+    return HEADING_LINE.sub(lambda m: "#" * max(1, len(m.group(1)) + shift) + m.group(2), entry)
+
+
+def latest_entries(root: Path, n: int = 1, path: str | None = None, level: int = 3) -> str:
     file = root / path if path else find_changelog(root)
     if file is None or not file.is_file():
         return ""
-    return "\n\n".join(split_entries(file.read_text())[:n])
+    return "\n\n".join(relevel(e, level) for e in split_entries(file.read_text())[:n])

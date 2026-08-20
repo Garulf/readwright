@@ -1,0 +1,20 @@
+[project]
+name = "demo-tool"
+version = "1.4.0"
+description = "A demo CLI that exists only to show off mkreadme"
+license = "MIT"
+requires-python = ">=3.11"
+classifiers = [
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+]
+
+[project.scripts]
+demo-tool = "demo_tool.cli:main"
+
+[tool.demo-tool]
+format = "table"
+color = true
+cache.dir = "~/.cache/demo-tool"
+cache.ttl = 3600

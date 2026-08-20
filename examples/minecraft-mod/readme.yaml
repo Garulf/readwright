@@ -1,0 +1,2 @@
+badges: [github-release, modrinth, curseforge, license]
+project: {owner: octocat, repo: headglance, modrinth: headglance, curseforge: "123456"}

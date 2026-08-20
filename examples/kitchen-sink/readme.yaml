@@ -1,0 +1,17 @@
+allow_exec: true
+badges_style: flat-square
+badges: [pypi, python, license, {preset: ci, workflow: test.yml}, pre-commit, ruff, version]
+badges_custom:
+  discord: {label: Discord, message: chat, color: 5865F2, logo: discord, link: https://discord.gg/example}
+donate: [kofi, github-sponsors]
+donate_handles: {kofi: octocat, github-sponsors: octocat}
+screenshots: {dir: docs/screenshots, width: 480}
+related:
+  - {repo: demo-tool-gui, description: Desktop front end}
+  - {repo: octocat/Hello-World, description: The classic}
+project:
+  owner: octocat
+  repo: demo-tool
+  ci_workflow: test.yml
+vars:
+  discord_url: https://discord.gg/example
