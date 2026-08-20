@@ -29,6 +29,10 @@ dotnet tool install --global {{ project.nuget }}
 {% elif project.project_type == "minecraft-mod" %}
 Download the latest release from the [releases page]({{ project.url ~ "/releases/latest" if project.url else "#" }})
 and drop the jar into your `mods` folder{% if project.minecraft_version %} (Minecraft {{ project.minecraft_version }}){% endif %}.
+{% elif project.project_type == "flow-plugin" %}
+In [Flow Launcher](https://www.flowlauncher.com/), type:
+
+{{ flow_install_cmd() }}
 {% elif project.project_type == "hacs" %}
 Install through [HACS](https://hacs.xyz/){% if project.url %} by adding `{{ project.owner }}/{{ project.repo }}` as a custom repository{% endif %},
 then add the resource to your dashboard.

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import re
 from collections.abc import Callable
 from dataclasses import dataclass
 from urllib.parse import quote, urlencode
@@ -33,6 +34,23 @@ def shield(
     if params:
         url += "?" + urlencode(params)
     return badge_markdown(label, url, link)
+
+
+IMAGE_URL = re.compile(r"!\[[^\]]*\]\((https://img\.shields\.io/[^)\s]+)\)")
+
+
+def apply_style(markdown: str, style: str | None) -> str:
+    if not style:
+        return markdown
+
+    def add(match: re.Match[str]) -> str:
+        url = match.group(1)
+        if "style=" in url:
+            return match.group(0)
+        joiner = "&" if "?" in url else "?"
+        return match.group(0).replace(url, f"{url}{joiner}style={style}")
+
+    return IMAGE_URL.sub(add, markdown)
 
 
 @dataclass
@@ -149,6 +167,46 @@ def _ruff(ctx: BadgeContext) -> str:
     return badge_markdown("Ruff", url, "https://github.com/astral-sh/ruff")
 
 
+def _modrinth(ctx: BadgeContext) -> str:
+    slug = str(ctx.options.get("slug") or ctx.config.project.modrinth or "")
+    if not slug:
+        raise ValueError("badge 'modrinth' needs project.modrinth (the project slug)")
+    return badge_markdown(
+        "Modrinth",
+        f"{SHIELDS}/modrinth/dt/{slug}?logo=modrinth",
+        f"https://modrinth.com/mod/{slug}",
+    )
+
+
+def _curseforge(ctx: BadgeContext) -> str:
+    project_id = str(ctx.options.get("id") or ctx.config.project.curseforge or "")
+    if not project_id:
+        raise ValueError("badge 'curseforge' needs project.curseforge (the numeric project id)")
+    return badge_markdown(
+        "CurseForge",
+        f"{SHIELDS}/curseforge/dt/{project_id}?logo=curseforge",
+        f"https://www.curseforge.com/projects/{project_id}",
+    )
+
+
+def _hacs(ctx: BadgeContext) -> str:
+    kind = str(ctx.options.get("kind") or "Custom")
+    return shield("HACS", kind, "41BDF5", logo="homeassistant", link="https://hacs.xyz")
+
+
+def _ha_version(ctx: BadgeContext) -> str:
+    version = str(ctx.options.get("version") or ctx.config.project.ha_min_version or "")
+    if not version:
+        raise ValueError("badge 'ha-version' needs project.ha_min_version (from hacs.json)")
+    return shield(
+        "Home Assistant",
+        f"{version}+",
+        "03A9F4",
+        logo="homeassistant",
+        link="https://www.home-assistant.io",
+    )
+
+
 def _version(ctx: BadgeContext) -> str:
     (version,) = ctx.require("version")
     return shield("version", version, "informational", link=ctx.config.project.url)
@@ -204,6 +262,10 @@ BUILTIN_PRESETS: dict[str, Preset] = {
     "pre-commit": _pre_commit,
     "ruff": _ruff,
     "version": _version,
+    "modrinth": _modrinth,
+    "curseforge": _curseforge,
+    "hacs": _hacs,
+    "ha-version": _ha_version,
 }
 
 DONATION_PRESETS: dict[str, Preset] = {
@@ -242,10 +304,14 @@ class BadgeRegistry:
             raise ValueError(
                 f"unknown badge preset '{preset}'; run `mkreadme badges` to list presets"
             ) from None
-        return fn(BadgeContext(self.config, options))
+        style = options.pop("style", None) or self.config.badges_style
+        return apply_style(fn(BadgeContext(self.config, options)), style)
 
-    def render_all(self) -> str:
-        return " ".join(self.render(spec.preset, **spec.options) for spec in self.config.badges)
+    def render_all(self, style: str | None = None) -> str:
+        return " ".join(
+            self.render(spec.preset, **{"style": style, **spec.options})
+            for spec in self.config.badges
+        )
 
-    def render_donate(self) -> str:
-        return " ".join(self.render(preset) for preset in self.config.donate)
+    def render_donate(self, style: str | None = None) -> str:
+        return " ".join(self.render(preset, style=style) for preset in self.config.donate)

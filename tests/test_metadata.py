@@ -121,3 +121,18 @@ def test_detect_hacs_with_package_json_prefers_hacs_type(tmp_path):
     (tmp_path / "package.json").write_text('{"name": "motion-card", "version": "1.0.0"}')
     meta = detect(tmp_path)
     assert meta.project_type == "hacs" and meta.name == "Motion Card" and meta.version == "1.0.0"
+
+
+def test_detect_flow_plugin(tmp_path):
+    (tmp_path / "plugin.json").write_text(
+        '{"ID": "abc", "ActionKeyword": "dc", "Name": "Discord Flow", "Description": "Jump",'
+        ' "Version": "1.4.0", "Language": "python"}'
+    )
+    meta = detect(tmp_path)
+    assert meta.project_type == "flow-plugin" and meta.name == "Discord Flow"
+    assert meta.flow_plugin == "Discord Flow" and meta.version == "1.4.0" and meta.tagline == "Jump"
+
+
+def test_detect_hacs_min_version(tmp_path):
+    (tmp_path / "hacs.json").write_text('{"name": "Card", "homeassistant": "2024.6.0"}')
+    assert detect(tmp_path).ha_min_version == "2024.6.0"

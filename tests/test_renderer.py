@@ -179,3 +179,8 @@ def test_repo_template_beats_extra_paths(tmp_repo, tmp_path):
     (tmp_repo / "README.md.j2").write_text("repo\n")
     write_config(tmp_repo, templates=[str(shared)])
     assert render(tmp_repo).text.endswith("repo\n")
+
+
+def test_install_partial_flow_plugin(tmp_path):
+    (tmp_path / "plugin.json").write_text('{"ActionKeyword": "x", "Name": "My Plugin"}')
+    assert "pm install My Plugin" in render(tmp_path).text

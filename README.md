@@ -69,10 +69,19 @@ Run `{{ project.name }} --help`.
 | `toc()`, `toc(1, 2)` | Table of contents from the headings below it (min/max level) |
 | `changelog(n=1)` | Newest `n` entries of `CHANGELOG.md` |
 | `project.*`, `vars.*` | Repo metadata and free-form config values |
+| `cli_help("mytool --help")` | Runs the command and fences its output (needs `allow_exec: true`) |
+| `include_file(path)`, `code_block(path)`, `snippet(path, start, end)` | Pull a file, a fenced file, or a marked region into the README |
+| `config_table(path, section=...)`, `env_table(".env.example")`, `entry_points_table()` | Markdown tables from YAML/TOML/JSON, env files, `[project.scripts]` |
+| `gh_link("issues", "Issues")`, `spdx_link()`, `my_ha_link("hacs_repository", owner=..., repository=...)` | Repo-relative GitHub links, SPDX license link, My Home Assistant buttons |
+| `callout("tip", text)`, `details(summary, body)`, `center(html)`, `columns([...])` | GitHub alerts, collapsibles, centered blocks, side-by-side cells |
+| `logo(width=120)`, `video("demo")`, `contributors([...])` | Theme-aware logo from `docs/logo.*`, video/gif embed, avatar grid |
+| `flow_install_cmd()`, `mc_versions()`, `mod_dependencies()`, `related_repos()` | Flow Launcher / Minecraft mod / related-repo tables |
+| `git_sha()`, `git_tag()`, `today()` | Build metadata (these change between renders, so `check` will flag them) |
 
 Badge presets: `pypi`, `pypi-downloads`, `python`, `license`, `ci`, `codecov`, `npm`, `github-release`,
-`github-stars`, `pre-commit`, `ruff`, `version`, plus donation presets `kofi`, `buymeacoffee`, `github-sponsors`,
-`patreon`, `paypal`. Add your own under `badges_custom`.
+`github-stars`, `pre-commit`, `ruff`, `version`, `modrinth`, `curseforge`, `hacs`, `ha-version`, plus donation presets `kofi`, `buymeacoffee`, `github-sponsors`,
+`patreon`, `paypal`. Add your own under `badges_custom`; set `badges_style: flat-square` (or pass
+`style=` to any badge helper) to restyle them all.
 
 Blocks in `base.md.j2`: `header`, `badges`, `donate`, `toc`, `screenshots`, `install`, `usage`, `extra`,
 `contributing`, `license`. Any packaged partial can be shadowed by a file of the same name under
@@ -83,13 +92,17 @@ Blocks in `base.md.j2`: `header`, `badges`, `donate`, `toc`, `screenshots`, `ins
 `readme.yaml` in the repo root (or `[tool.readme]` in `pyproject.toml`). Everything is optional;
 metadata is autodetected from the git remote, the `LICENSE` file and whichever manifest the project
 has: `pyproject.toml`, `package.json`, `Cargo.toml`, `go.mod`, `*.csproj`, Gradle (`gradle.properties`
-mod metadata for Minecraft mods) or `hacs.json`. The install section adapts to the project type.
+mod metadata for Minecraft mods), `hacs.json` or a Flow Launcher `plugin.json`. The install section
+adapts to the project type.
 
 ```yaml
 template: README.md.j2
 templates: [../shared-readme-templates, "pkg:my_org_templates"]   # extra template search paths
 output: README.md
 strict: false                     # missing screenshot -> error instead of warning
+allow_exec: false                 # let cli_help() run commands during render
+badges_style: flat-square         # optional shields.io style for every badge
+related: [{repo: other-tool, description: Sibling project}]   # for related_repos()
 screenshots: {dir: docs/screenshots, width: 720, style: markdown}
 badges: [pypi, python, license, {preset: ci, workflow: test.yml}]
 badges_custom:
@@ -109,14 +122,14 @@ stays reproducible in CI. `mkreadme render --user-config` merges them ad hoc.
 ```yaml
 # .pre-commit-config.yaml
 - repo: https://github.com/Garulf/mkreadme
-  rev: v0.2.0
+  rev: v0.3.0
   hooks:
     - id: mkreadme-check
 ```
 
 ```yaml
 # .github/workflows/ci.yml
-- uses: Garulf/mkreadme@v0.2.0
+- uses: Garulf/mkreadme@v0.3.0
   with:
     mode: check     # or render
 ```

@@ -48,6 +48,8 @@ class Metadata:
     nuget: str | None = None
     mod_id: str | None = None
     minecraft_version: str | None = None
+    ha_min_version: str | None = None
+    flow_plugin: str | None = None
     python_versions: list[str] = field(default_factory=list)
     project_type: str = "generic"
 
@@ -242,12 +244,31 @@ def _apply_hacs(meta: Metadata, root: Path) -> bool:
     data = json.loads(path.read_text())
     _apply_package_json(meta, root)
     meta.project_type = "hacs"
-    _set(meta, name=data.get("name"))
+    _set(meta, name=data.get("name"), ha_min_version=data.get("homeassistant"))
+    return True
+
+
+def _apply_flow_plugin(meta: Metadata, root: Path) -> bool:
+    path = root / "plugin.json"
+    if not path.is_file():
+        return False
+    data = json.loads(path.read_text())
+    if "ActionKeyword" not in data and "ExecuteFileName" not in data:
+        return False
+    meta.project_type = "flow-plugin"
+    _set(
+        meta,
+        name=data.get("Name"),
+        flow_plugin=data.get("Name"),
+        version=data.get("Version"),
+        tagline=data.get("Description"),
+    )
     return True
 
 
 DETECTORS = (
     _apply_hacs,
+    _apply_flow_plugin,
     _apply_pyproject,
     _apply_package_json,
     _apply_cargo,

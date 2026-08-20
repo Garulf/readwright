@@ -19,6 +19,7 @@ from jinja2 import (
 from mkreadme.badges import BadgeRegistry, shield
 from mkreadme.changelog import latest_entries
 from mkreadme.config import DEFAULT_TEMPLATE, Config, user_templates_dir
+from mkreadme.helpers import Helpers
 from mkreadme.images import ImageHelper
 from mkreadme.toc import FENCE, insert_toc, toc_token
 
@@ -96,6 +97,7 @@ class Renderer:
         self._external_warn = warn
         self.badges = BadgeRegistry(config)
         self.images = ImageHelper(self.root, config, warn=self._warn)
+        self.helpers = Helpers(self.root, config, warn=self._warn)
         self.loaders: list[TrackingLoader] = [
             TrackingLoader(
                 "repo", FileSystemLoader([str(self.root / "templates"), str(self.root)])
@@ -138,6 +140,7 @@ class Renderer:
             project=self.config.project,
             vars=self.config.vars,
             config=self.config,
+            **self.helpers.as_globals(),
         )
         return env
 

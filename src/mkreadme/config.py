@@ -33,6 +33,10 @@ class ProjectInfo(StrictModel):
     nuget: str | None = None
     mod_id: str | None = None
     minecraft_version: str | None = None
+    modrinth: str | None = None
+    curseforge: str | None = None
+    ha_min_version: str | None = None
+    flow_plugin: str | None = None
     license: str | None = None
     ci_workflow: str | None = None
     python_versions: list[str] = Field(default_factory=list)
@@ -76,11 +80,20 @@ class CustomBadge(StrictModel):
     style: str | None = None
 
 
+class RelatedRepo(StrictModel):
+    repo: str
+    description: str = ""
+    url: str | None = None
+
+
 class Config(StrictModel):
     template: str = DEFAULT_TEMPLATE
     templates: list[str] = Field(default_factory=list)
     output: str = "README.md"
     strict: bool = False
+    allow_exec: bool = False
+    badges_style: str | None = None
+    related: list[RelatedRepo] = Field(default_factory=list)
     screenshots: ScreenshotsConfig = Field(default_factory=ScreenshotsConfig)
     badges: list[BadgeSpec] = Field(default_factory=list)
     badges_custom: dict[str, CustomBadge] = Field(default_factory=dict)

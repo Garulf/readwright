@@ -255,8 +255,8 @@ ADOPT_TEMPLATE = """\
 
 CONFIG_HEADER = """\
 # mkreadme configuration. All keys are optional; autodetected values are shown.
-# Keys: template, templates, output, strict, screenshots{dir,width,style}, badges,
-#       badges_custom, donate, donate_handles, project{...}, vars.
+# Keys: template, templates, output, strict, allow_exec, screenshots{dir,width,style}, badges,
+#       badges_style, badges_custom, donate, donate_handles, related, project{...}, vars.
 # Run `mkreadme badges` / `mkreadme blocks` to list badge presets and template blocks.
 """
 

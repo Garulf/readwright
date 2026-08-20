@@ -173,3 +173,30 @@ def test_badges_and_donate_badges_from_config():
 def test_names_lists_builtin_and_custom():
     names = make_registry().names()
     assert "pypi" in names and "kofi" in names
+
+
+def test_badge_style_config_and_kw():
+    reg = make_registry(badges_style="flat-square", badges=[BadgeSpec(preset="pypi")])
+    assert "pypi/v/demo-pkg?style=flat-square)" in reg.render("pypi")
+    assert "logo=pre-commit&style=flat-square" in reg.render("pre-commit")
+    assert "style=for-the-badge" in reg.render("pypi", style="for-the-badge")
+    assert "style=flat-square" in reg.render_all()
+    assert "style=plastic" in reg.render_all(style="plastic")
+    assert "style=" not in make_registry().render("pypi")
+
+
+def test_modrinth_curseforge_hacs_badges():
+    reg = BadgeRegistry(
+        Config(
+            project=ProjectInfo(modrinth="demo-mod", curseforge="12345", ha_min_version="2024.6")
+        )
+    )
+    assert "modrinth/dt/demo-mod" in reg.render("modrinth")
+    assert reg.render("modrinth", slug="other").endswith("(https://modrinth.com/mod/other)")
+    assert "curseforge/dt/12345" in reg.render("curseforge")
+    assert "HACS-Custom-41BDF5" in reg.render("hacs") and "HACS-Default" in reg.render(
+        "hacs", kind="Default"
+    )
+    assert "Home%20Assistant-2024.6%2B-03A9F4" in reg.render("ha-version")
+    with pytest.raises(ValueError, match="modrinth"):
+        BadgeRegistry(Config()).render("modrinth")
