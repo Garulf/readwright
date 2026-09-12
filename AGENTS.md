@@ -66,6 +66,11 @@ regenerating rather than hand-editing expected output.
   `dotnet-tool`, `node-cli`, `config-only`) exercising every helper; useful as
   reference when adding or changing a helper's behavior.
 - `action.yml` — GitHub Action wrapper for `readwright check`/`render` in CI.
+- `.agents/skills/readwright/` — the agent skill (`SKILL.md` + `helpers.md`) that
+  documents the render/check workflow, config keys and template helpers for coding
+  agents. `.claude/skills/readwright` is a symlink to it, and hatch `force-include`s
+  it into the wheel as `readwright/.agents/skills/readwright/`. When a helper, config
+  key, CLI flag or block is added or changed, update the skill in the same change.
 
 ## Testing conventions
 

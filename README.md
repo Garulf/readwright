@@ -10,6 +10,7 @@ Render GitHub READMEs from Jinja2 templates with badge and screenshot helpers.
 - [Template helpers](#template-helpers)
 - [Configuration](#configuration)
 - [pre-commit and GitHub Actions](#pre-commit-and-github-actions)
+- [Agent skill](#agent-skill)
 - [Contributing](#contributing)
 - [License](#license)
 
@@ -141,16 +142,30 @@ stays reproducible in CI. `readwright render --user-config` merges them ad hoc.
 ```yaml
 # .pre-commit-config.yaml
 - repo: https://github.com/Garulf/readwright
-  rev: v0.3.0
+  rev: v0.4.0
   hooks:
     - id: readwright-check
 ```
 
 ```yaml
 # .github/workflows/ci.yml
-- uses: Garulf/readwright@v0.3.0
+- uses: Garulf/readwright@v0.4.0
   with:
     mode: check     # or render
+```
+
+## Agent skill
+
+The repo ships an [agent skill](https://agentskills.io) at `.agents/skills/readwright/`
+that teaches coding agents (Claude Code, Codex, Copilot CLI, Gemini CLI, ...) the
+render/check workflow, the config keys and every template helper, so they edit
+`README.md.j2` instead of the generated `README.md`. Claude Code picks it up from
+this repo automatically via `.claude/skills/readwright`; the same directory is
+bundled inside the wheel, so any project can copy it into its own `.agents/skills/`
+(or your user-level `~/.agents/skills/` / `~/.claude/skills/`):
+
+```sh
+cp -r "$(python -c 'import readwright, os; print(os.path.dirname(readwright.__file__))')/.agents/skills/readwright" .agents/skills/
 ```
 
 ## Contributing

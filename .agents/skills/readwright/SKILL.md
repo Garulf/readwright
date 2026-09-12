@@ -35,7 +35,7 @@ template/config, then re-render.
 | `readwright check` | Fail with a diff if `README.md` is stale (CI/pre-commit) |
 | `readwright badges` | List available badge presets |
 | `readwright blocks` | List overridable template blocks/partials |
-| `readwright show <partial>` | Print a packaged template (e.g. `partials/install.md.j2`) to copy and customize |
+| `readwright show <template>` | Print a packaged template (`base.md.j2` for the block order, or e.g. `partials/install.md.j2`) to copy and customize |
 
 All accept `-C/--root` (repo root) and `-c/--config` (explicit config path) as
 options *after* the subcommand, e.g. `readwright render -C /path/to/repo` —
@@ -141,14 +141,14 @@ builds a gallery of everything in the directory; control order/captions with
 ```yaml
 # .pre-commit-config.yaml
 - repo: https://github.com/Garulf/readwright
-  rev: v0.3.0
+  rev: v0.4.0   # pin to the latest release tag
   hooks:
     - id: readwright-check
 ```
 
 ```yaml
 # .github/workflows/ci.yml
-- uses: Garulf/readwright@v0.3.0
+- uses: Garulf/readwright@v0.4.0
   with:
     mode: check   # or render
 ```
