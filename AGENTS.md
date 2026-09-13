@@ -51,7 +51,7 @@ regenerating rather than hand-editing expected output.
 ## Layout
 
 - `src/readwright/cli.py` — Typer commands: `init`, `render`, `check`, `badges`,
-  `blocks`, `show`.
+  `blocks`, `show`, `skill`.
 - `src/readwright/renderer.py` — Jinja2 environment setup and rendering pipeline.
 - `src/readwright/helpers.py`, `badges.py`, `images.py`, `toc.py`, `changelog.py`,
   `metadata.py` — the template helper functions exposed to `README.md.j2`
@@ -69,7 +69,9 @@ regenerating rather than hand-editing expected output.
 - `.agents/skills/readwright/` — the agent skill (`SKILL.md` + `helpers.md`) that
   documents the render/check workflow, config keys and template helpers for coding
   agents. `.claude/skills/readwright` is a symlink to it, and hatch `force-include`s
-  it into the wheel as `readwright/.agents/skills/readwright/`. When a helper, config
+  it into the wheel as `readwright/.agents/skills/readwright/`; `readwright skill
+  --install` copies it out again (in the dev checkout the command falls back to the
+  repo-root directory). When a helper, config
   key, CLI flag or block is added or changed, update the skill in the same change.
 
 ## Testing conventions

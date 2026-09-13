@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import difflib
 import re
+import shutil
 import sys
 from pathlib import Path
 from typing import Annotated
@@ -393,6 +394,50 @@ def show(
         fail(f"template '{name}' not found")
     err.print(f"[dim]# {name} <- {renderer.source_label(name)}[/]")
     sys.stdout.write(source)
+
+
+SKILL_NAME = "readwright"
+_SKILL_RELATIVE = Path(".agents") / "skills" / SKILL_NAME
+DEFAULT_SKILL_DEST = Path(".agents") / "skills"
+
+
+def bundled_skill_dir() -> Path:
+    package_dir = Path(__file__).resolve().parent
+    candidates = (package_dir / _SKILL_RELATIVE, package_dir.parent.parent / _SKILL_RELATIVE)
+    for candidate in candidates:
+        if (candidate / "SKILL.md").is_file():
+            return candidate
+    fail(f"bundled skill not found (looked in {', '.join(map(str, candidates))})")
+    raise AssertionError("unreachable")
+
+
+@app.command()
+def skill(
+    install: Annotated[
+        bool, typer.Option("--install", help="Copy the skill into a skills directory.")
+    ] = False,
+    dest: Annotated[
+        Path | None,
+        typer.Option(
+            "--dest", "-d", help="Skills directory to install into (default: .agents/skills)."
+        ),
+    ] = None,
+    force: Annotated[bool, typer.Option("--force", help="Replace an existing copy.")] = False,
+    root: RootOpt = Path("."),
+) -> None:
+    """Print the bundled agent skill's location, or --install it into a project."""
+    source = bundled_skill_dir()
+    if not install:
+        out.print(str(source), highlight=False, soft_wrap=True)
+        return
+    skills_dir = dest if dest is not None else root / DEFAULT_SKILL_DEST
+    target = skills_dir / SKILL_NAME
+    if target.exists():
+        if not force:
+            fail(f"{target} already exists (use --force to replace it)")
+        shutil.rmtree(target)
+    shutil.copytree(source, target)
+    out.print(f"[green]installed[/] skill to {target}", highlight=False, soft_wrap=True)
 
 
 if __name__ == "__main__":

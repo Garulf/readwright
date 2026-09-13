@@ -1,3 +1,5 @@
+from pathlib import Path
+
 import yaml
 from typer.testing import CliRunner
 
@@ -208,3 +210,30 @@ def test_watch_paths(tmp_repo):
     paths = watch_paths(tmp_repo, resolve(tmp_repo))
     names = {p.name for p in paths}
     assert {"README.md.j2", "pyproject.toml", "screenshots"} <= names
+
+
+def test_skill_prints_bundled_path():
+    result = run("skill")
+    assert result.exit_code == 0, result.output
+    path = result.output.strip()
+    assert path.endswith("readwright")
+    assert (Path(path) / "SKILL.md").is_file()
+    assert (Path(path) / "helpers.md").is_file()
+
+
+def test_skill_install_copies_into_agents_dir(tmp_path):
+    result = run("skill", "--install", "-C", tmp_path)
+    assert result.exit_code == 0, result.output
+    installed = tmp_path / ".agents" / "skills" / "readwright"
+    assert (installed / "SKILL.md").read_text().startswith("---\nname: readwright")
+    assert (installed / "helpers.md").is_file()
+
+
+def test_skill_install_custom_dest_and_refuses_overwrite(tmp_path):
+    dest = tmp_path / "my-skills"
+    assert run("skill", "--install", "--dest", dest).exit_code == 0
+    assert (dest / "readwright" / "SKILL.md").is_file()
+    again = run("skill", "--install", "--dest", dest)
+    assert again.exit_code == 1
+    assert "already exists" in again.output
+    assert run("skill", "--install", "--dest", dest, "--force").exit_code == 0

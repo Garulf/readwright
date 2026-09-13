@@ -35,6 +35,7 @@ template/config, then re-render.
 | `readwright check` | Fail with a diff if `README.md` is stale (CI/pre-commit) |
 | `readwright badges` | List available badge presets |
 | `readwright blocks` | List overridable template blocks/partials |
+| `readwright skill [--install] [--dest DIR] [--force]` | Print the bundled copy of this skill, or install it into a project's `.agents/skills/` (or `--dest`) |
 | `readwright show <template>` | Print a packaged template (`base.md.j2` for the block order, or e.g. `partials/install.md.j2`) to copy and customize |
 
 All accept `-C/--root` (repo root) and `-c/--config` (explicit config path) as
