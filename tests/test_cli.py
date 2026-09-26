@@ -1,3 +1,5 @@
+import subprocess
+import sys
 from pathlib import Path
 
 import yaml
@@ -258,3 +260,14 @@ def test_completion_suggests_commands_and_templates():
     assert {"render", "completion"} <= set(complete("readwright ", "1"))
     assert "partials/install.md.j2" in complete("readwright show partials/", "2")
     assert complete("readwright show base", "2") == ["base.md.j2"]
+
+
+def test_import_skips_heavy_dependencies():
+    code = (
+        "import sys, readwright.cli; "
+        "print(sorted(m for m in ('pydantic', 'jinja2', 'rich', 'yaml') if m in sys.modules))"
+    )
+    result = subprocess.run(
+        [sys.executable, "-c", code], capture_output=True, text=True, check=True
+    )
+    assert result.stdout.strip() == "[]"
