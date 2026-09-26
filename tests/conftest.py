@@ -1,3 +1,4 @@
+import os
 import subprocess
 from pathlib import Path
 
@@ -17,6 +18,13 @@ classifiers = [
 """
 
 PNG_BYTES = b"\x89PNG\r\n\x1a\n"
+
+
+@pytest.fixture(autouse=True)
+def isolated_git_env(monkeypatch):
+    # git hooks export GIT_DIR, which would point test repos at the real repository
+    for name in [name for name in os.environ if name.startswith("GIT_")]:
+        monkeypatch.delenv(name)
 
 
 @pytest.fixture
