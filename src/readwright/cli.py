@@ -6,29 +6,20 @@ import difflib
 import re
 import shutil
 import sys
+from functools import cache
 from pathlib import Path
-from typing import Annotated
+from typing import TYPE_CHECKING, Annotated
 
 import typer
-import yaml
-from jinja2 import PackageLoader
-from rich.console import Console
-from rich.table import Table
 from typer.completion import Shells, completion_init, get_completion_script
 
-from readwright import __version__
-from readwright.badges import BadgeRegistry
-from readwright.config import (
-    DEFAULT_CONFIG_NAME,
-    DEFAULT_TEMPLATE,
-    Config,
-    ProjectInfo,
-    config_sources,
-    deep_merge,
-    load_user_config,
-    resolve,
-)
-from readwright.renderer import BASE_TEMPLATE, MARKER_PREFIX, Renderer, RenderResult
+# Every shell Tab press imports this module, so heavy imports live in the functions that use them.
+
+if TYPE_CHECKING:
+    from rich.console import Console
+
+    from readwright.config import Config
+    from readwright.renderer import RenderResult
 
 completion_init()
 
@@ -37,8 +28,22 @@ app = typer.Typer(
     no_args_is_help=True,
     add_completion=False,
 )
-out = Console()
-err = Console(stderr=True)
+
+
+@cache
+def _console(stderr: bool) -> Console:
+    from rich.console import Console
+
+    return Console(stderr=stderr)
+
+
+def out() -> Console:
+    return _console(stderr=False)
+
+
+def err() -> Console:
+    return _console(stderr=True)
+
 
 RootOpt = Annotated[Path, typer.Option("--root", "-C", help="Repository root.")]
 ConfigOpt = Annotated[Path | None, typer.Option("--config", "-c", help="Config file path.")]
@@ -56,7 +61,9 @@ VerboseOpt = Annotated[
 
 def version_callback(value: bool) -> None:
     if value:
-        out.print(f"readwright {__version__}")
+        from readwright import __version__
+
+        out().print(f"readwright {__version__}")
         raise typer.Exit()
 
 
@@ -70,17 +77,19 @@ def main(
 
 
 def warn(message: str) -> None:
-    err.print("[yellow]warning:[/] ", end="")
-    err.print(message, markup=False, highlight=False)
+    err().print("[yellow]warning:[/] ", end="")
+    err().print(message, markup=False, highlight=False)
 
 
 def fail(message: str, code: int = 1) -> None:
-    err.print("[red]error:[/] ", end="")
-    err.print(message, markup=False, highlight=False)
+    err().print("[red]error:[/] ", end="")
+    err().print(message, markup=False, highlight=False)
     raise typer.Exit(code)
 
 
 def _load(root: Path, config: Path | None, user_config: bool, strict: bool) -> Config:
+    from readwright.config import config_sources, resolve
+
     if config is None and len(sources := config_sources(root)) > 1:
         warn(f"both {' and '.join(sources)} exist; using {sources[0]}")
     try:
@@ -91,13 +100,15 @@ def _load(root: Path, config: Path | None, user_config: bool, strict: bool) -> C
 
 
 def _render_with(root: Path, cfg: Config, verbose: bool) -> RenderResult:
+    from readwright.renderer import Renderer
+
     try:
         result = Renderer(root, cfg, warn=warn).render()
     except Exception as exc:
         fail(f"{type(exc).__name__}: {exc}")
     if verbose:
         for name, source in result.sources.items():
-            err.print(f"[dim]template {name} <- {source}[/]")
+            err().print(f"[dim]template {name} <- {source}[/]")
     return result
 
 
@@ -109,6 +120,8 @@ def _render(
 
 
 def _is_managed(path: Path) -> bool:
+    from readwright.renderer import MARKER_PREFIX
+
     return path.read_text(encoding="utf-8").startswith(MARKER_PREFIX)
 
 
@@ -116,7 +129,7 @@ def _write_output(root: Path, cfg: Config, result: RenderResult, force: bool) ->
     target = root / cfg.output
     if target.is_file():
         if target.read_text(encoding="utf-8") == result.text:
-            out.print(f"{cfg.output} unchanged")
+            out().print(f"{cfg.output} unchanged")
             return
         if not force and not _is_managed(target):
             fail(
@@ -125,10 +138,12 @@ def _write_output(root: Path, cfg: Config, result: RenderResult, force: bool) ->
             )
     target.parent.mkdir(parents=True, exist_ok=True)
     target.write_text(result.text, encoding="utf-8")
-    out.print(f"{cfg.output} updated from {result.template_name}")
+    out().print(f"{cfg.output} updated from {result.template_name}")
 
 
 def watch_paths(root: Path, cfg: Config) -> list[Path]:
+    from readwright.config import DEFAULT_CONFIG_NAME
+
     candidates = [
         root / cfg.template,
         root / DEFAULT_CONFIG_NAME,
@@ -184,7 +199,7 @@ def _watch_loop(
 
     cfg = _load(root, config, user_config, strict)
     paths = watch_paths(root, cfg)
-    err.print(
+    err().print(
         f"[dim]watching {', '.join(str(p.relative_to(root)) for p in paths)} (ctrl-c to stop)[/]"
     )
     try:
@@ -209,6 +224,8 @@ def check(
     verbose: VerboseOpt = False,
 ) -> None:
     """Exit 1 if the output file is out of date with its template."""
+    from readwright.renderer import MARKER_PREFIX
+
     cfg, result = _render(root, config, user_config, strict, verbose)
     for name in result.user_templates:
         warn(f"user-level template '{name}' was used; CI renders will differ")
@@ -220,7 +237,7 @@ def check(
         warn(f"{cfg.output} is not managed by readwright (no marker); skipping")
         return
     if current == result.text:
-        out.print(f"{cfg.output} is up to date")
+        out().print(f"{cfg.output} is up to date")
         return
     diff = difflib.unified_diff(
         current.splitlines(keepends=True),
@@ -228,7 +245,7 @@ def check(
         fromfile=cfg.output,
         tofile=f"{cfg.output} (rendered)",
     )
-    out.print("".join(diff), end="", highlight=False, markup=False)
+    out().print("".join(diff), end="", highlight=False, markup=False)
     fail(f"{cfg.output} is out of date; run `readwright render`")
 
 
@@ -270,6 +287,8 @@ JINJA_SYNTAX = re.compile(r"{[{%#]")
 
 
 def _init_config_data(root: Path) -> dict:
+    from readwright.config import deep_merge, load_user_config, resolve
+
     cfg = resolve(root)
     data = cfg.model_dump(exclude_defaults=True, exclude_none=True)
     if (user := load_user_config()) is not None:
@@ -312,6 +331,10 @@ def init(
     ] = False,
 ) -> None:
     """Scaffold readme.yaml and README.md.j2 in the repository."""
+    import yaml
+
+    from readwright.config import DEFAULT_CONFIG_NAME, DEFAULT_TEMPLATE
+
     config_path = root / DEFAULT_CONFIG_NAME
     template_path = root / DEFAULT_TEMPLATE
     existing = [
@@ -343,14 +366,19 @@ def init(
     if from_readme:
         cfg = _load(root, None, False, False)
         _write_output(root, cfg, _render_with(root, cfg, False), force=True)
-        out.print(f"created {config_name} and {DEFAULT_TEMPLATE}; README.md is now managed")
+        out().print(f"created {config_name} and {DEFAULT_TEMPLATE}; README.md is now managed")
         return
-    out.print(f"created {config_name} and {DEFAULT_TEMPLATE}; run `readwright render`")
+    out().print(f"created {config_name} and {DEFAULT_TEMPLATE}; run `readwright render`")
 
 
 @app.command()
 def badges(root: RootOpt = Path("."), config: ConfigOpt = None) -> None:
     """List available badge presets."""
+    from rich.table import Table
+
+    from readwright.badges import BadgeRegistry
+    from readwright.config import Config, ProjectInfo, resolve
+
     try:
         cfg = resolve(root, config_path=config)
     except ValueError:
@@ -365,26 +393,29 @@ def badges(root: RootOpt = Path("."), config: ConfigOpt = None) -> None:
         except ValueError as exc:
             example = f"[dim]{exc}[/]"
         table.add_row(name, example)
-    out.print(table)
+    out().print(table)
 
 
 @app.command()
 def blocks(root: RootOpt = Path("."), config: ConfigOpt = None) -> None:
     """List the blocks of base.md.j2 and the partials that can be shadowed."""
+    from readwright.renderer import BASE_TEMPLATE, Renderer
+
     cfg = _load(root, config, False, False)
     renderer = Renderer(root, cfg)
     template = renderer.env.get_template(BASE_TEMPLATE)
-    out.print(f"[bold]blocks in {BASE_TEMPLATE}[/]")
+    out().print(f"[bold]blocks in {BASE_TEMPLATE}[/]")
     for name in template.blocks:
-        out.print(f"  {name}")
-    out.print("[bold]partials[/] (shadow with templates/partials/<name> in the repo)")
+        out().print(f"  {name}")
+    out().print("[bold]partials[/] (shadow with templates/partials/<name> in the repo)")
     for name in sorted(renderer.env.list_templates()):
         if name.startswith("partials/"):
-            out.print(f"  {name}  [dim]<- {renderer.source_label(name)}[/]")
+            out().print(f"  {name}  [dim]<- {renderer.source_label(name)}[/]")
 
 
 def bundled_template_names(incomplete: str) -> list[str]:
-    names = PackageLoader("readwright", "templates").list_templates()
+    templates = Path(__file__).resolve().parent / "templates"
+    names = sorted(p.relative_to(templates).as_posix() for p in templates.rglob("*") if p.is_file())
     return [name for name in names if name.startswith(incomplete)]
 
 
@@ -400,13 +431,15 @@ def show(
     config: ConfigOpt = None,
 ) -> None:
     """Print a template's source (useful for copying a partial to override it)."""
+    from readwright.renderer import Renderer
+
     cfg = _load(root, config, False, False)
     renderer = Renderer(root, cfg)
     try:
         source, _, _ = renderer.env.loader.get_source(renderer.env, name)
     except Exception:
         fail(f"template '{name}' not found")
-    err.print(f"[dim]# {name} <- {renderer.source_label(name)}[/]")
+    err().print(f"[dim]# {name} <- {renderer.source_label(name)}[/]")
     sys.stdout.write(source)
 
 
@@ -442,7 +475,7 @@ def skill(
     """Print the bundled agent skill's location, or --install it into a project."""
     source = bundled_skill_dir()
     if not install:
-        out.print(str(source), highlight=False, soft_wrap=True)
+        out().print(str(source), highlight=False, soft_wrap=True)
         return
     skills_dir = dest if dest is not None else root / DEFAULT_SKILL_DEST
     target = skills_dir / SKILL_NAME
@@ -451,7 +484,7 @@ def skill(
             fail(f"{target} already exists (use --force to replace it)")
         shutil.rmtree(target)
     shutil.copytree(source, target)
-    out.print(f"[green]installed[/] skill to {target}", highlight=False, soft_wrap=True)
+    out().print(f"[green]installed[/] skill to {target}", highlight=False, soft_wrap=True)
 
 
 @app.command()
