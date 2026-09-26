@@ -51,7 +51,7 @@ regenerating rather than hand-editing expected output.
 ## Layout
 
 - `src/readwright/cli.py` — Typer commands: `init`, `render`, `check`, `badges`,
-  `blocks`, `show`, `skill`.
+  `blocks`, `show`, `skill`, `completion`.
 - `src/readwright/renderer.py` — Jinja2 environment setup and rendering pipeline.
 - `src/readwright/helpers.py`, `badges.py`, `images.py`, `toc.py`, `changelog.py`,
   `metadata.py` — the template helper functions exposed to `README.md.j2`

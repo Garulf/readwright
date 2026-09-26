@@ -11,8 +11,10 @@ from typing import Annotated
 
 import typer
 import yaml
+from jinja2 import PackageLoader
 from rich.console import Console
 from rich.table import Table
+from typer.completion import Shells, completion_init, get_completion_script
 
 from readwright import __version__
 from readwright.badges import BadgeRegistry
@@ -27,6 +29,8 @@ from readwright.config import (
     resolve,
 )
 from readwright.renderer import BASE_TEMPLATE, MARKER_PREFIX, Renderer, RenderResult
+
+completion_init()
 
 app = typer.Typer(
     help="Render GitHub READMEs from Jinja2 templates.",
@@ -379,9 +383,19 @@ def blocks(root: RootOpt = Path("."), config: ConfigOpt = None) -> None:
             out.print(f"  {name}  [dim]<- {renderer.source_label(name)}[/]")
 
 
+def bundled_template_names(incomplete: str) -> list[str]:
+    names = PackageLoader("readwright", "templates").list_templates()
+    return [name for name in names if name.startswith(incomplete)]
+
+
 @app.command()
 def show(
-    name: Annotated[str, typer.Argument(help="Template name, e.g. base.md.j2")],
+    name: Annotated[
+        str,
+        typer.Argument(
+            help="Template name, e.g. base.md.j2", autocompletion=bundled_template_names
+        ),
+    ],
     root: RootOpt = Path("."),
     config: ConfigOpt = None,
 ) -> None:
@@ -438,6 +452,17 @@ def skill(
         shutil.rmtree(target)
     shutil.copytree(source, target)
     out.print(f"[green]installed[/] skill to {target}", highlight=False, soft_wrap=True)
+
+
+@app.command()
+def completion(
+    shell: Annotated[Shells, typer.Argument(help="Shell to generate the script for.")],
+) -> None:
+    """Print a shell completion script, e.g. eval "$(readwright completion zsh)"."""
+    script = get_completion_script(
+        prog_name="readwright", complete_var="_READWRIGHT_COMPLETE", shell=shell.value
+    )
+    sys.stdout.write(script + "\n")
 
 
 if __name__ == "__main__":
