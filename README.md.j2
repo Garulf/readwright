@@ -134,6 +134,17 @@ stays reproducible in CI. `readwright render --user-config` merges them ad hoc.
     mode: check     # or render
 ```
 
+## Shell completion
+
+`readwright completion <shell>` prints a completion script for bash, zsh, fish or PowerShell.
+It completes subcommands, options and the template names `readwright show` accepts.
+
+```sh
+eval "$(readwright completion bash)"   # add to ~/.bashrc
+eval "$(readwright completion zsh)"    # add to ~/.zshrc, after compinit
+readwright completion fish > ~/.config/fish/completions/readwright.fish
+```
+
 ## Agent skill
 
 The repo ships an [agent skill](https://agentskills.io) at `.agents/skills/readwright/`

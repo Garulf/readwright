@@ -10,6 +10,7 @@ Render GitHub READMEs from Jinja2 templates with badge and screenshot helpers.
 - [Template helpers](#template-helpers)
 - [Configuration](#configuration)
 - [pre-commit and GitHub Actions](#pre-commit-and-github-actions)
+- [Shell completion](#shell-completion)
 - [Agent skill](#agent-skill)
 - [Contributing](#contributing)
 - [License](#license)
@@ -142,16 +143,27 @@ stays reproducible in CI. `readwright render --user-config` merges them ad hoc.
 ```yaml
 # .pre-commit-config.yaml
 - repo: https://github.com/Garulf/readwright
-  rev: v0.4.0
+  rev: v0.5.0
   hooks:
     - id: readwright-check
 ```
 
 ```yaml
 # .github/workflows/ci.yml
-- uses: Garulf/readwright@v0.4.0
+- uses: Garulf/readwright@v0.5.0
   with:
     mode: check     # or render
+```
+
+## Shell completion
+
+`readwright completion <shell>` prints a completion script for bash, zsh, fish or PowerShell.
+It completes subcommands, options and the template names `readwright show` accepts.
+
+```sh
+eval "$(readwright completion bash)"   # add to ~/.bashrc
+eval "$(readwright completion zsh)"    # add to ~/.zshrc, after compinit
+readwright completion fish > ~/.config/fish/completions/readwright.fish
 ```
 
 ## Agent skill

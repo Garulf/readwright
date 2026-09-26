@@ -237,3 +237,24 @@ def test_skill_install_custom_dest_and_refuses_overwrite(tmp_path):
     assert again.exit_code == 1
     assert "already exists" in again.output
     assert run("skill", "--install", "--dest", dest, "--force").exit_code == 0
+
+
+def test_completion_prints_script_for_shell():
+    for shell in ("bash", "zsh", "fish"):
+        result = run("completion", shell)
+        assert result.exit_code == 0, result.output
+        assert "_READWRIGHT_COMPLETE=complete_" in result.output
+
+
+def test_completion_rejects_unknown_shell():
+    assert run("completion", "tcsh").exit_code != 0
+
+
+def test_completion_suggests_commands_and_templates():
+    def complete(words, cword):
+        env = {"_READWRIGHT_COMPLETE": "complete_bash", "COMP_WORDS": words, "COMP_CWORD": cword}
+        return runner.invoke(app, [], env=env, prog_name="readwright").output.split()
+
+    assert {"render", "completion"} <= set(complete("readwright ", "1"))
+    assert "partials/install.md.j2" in complete("readwright show partials/", "2")
+    assert complete("readwright show base", "2") == ["base.md.j2"]
